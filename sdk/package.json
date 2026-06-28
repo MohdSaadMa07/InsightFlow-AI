@@ -1,0 +1,25 @@
+{
+  "name": "insightflow-sdk",
+  "version": "1.0.0",
+  "description": "InsightFlow AI — Product analytics SDK. Track user events, pageviews, and identities.",
+  "main": "insightflow.js",
+  "files": [
+    "insightflow.js"
+  ],
+  "keywords": [
+    "analytics",
+    "product-analytics",
+    "user-tracking",
+    "events",
+    "insightflow"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-org/insightflow-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/insightflow-sdk/issues"
+  },
+  "homepage": "https://insightflow.ai"
+}
