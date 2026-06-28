@@ -29,6 +29,8 @@ class FunnelDefinitionSerializer(serializers.ModelSerializer):
 
 
 class FunnelAnalysisSerializer(serializers.ModelSerializer):
+    funnel_name = serializers.CharField(source='funnel.name', read_only=True)
+
     class Meta:
         model = FunnelAnalysis
         fields = '__all__'

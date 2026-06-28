@@ -51,5 +51,6 @@ export const api = {
     list: (projectId) => api.get(`/api/v1/semantic/mappings/?project_id=${projectId}`),
     detect: (projectId) => api.post(`/api/v1/semantic/detect/`, { project_id: projectId }),
     update: (mappingId, data) => api.put(`/api/v1/semantic/mappings/${mappingId}/`, data),
+    computeFunnel: (projectId, days = 30) => api.post(`/api/v1/semantic/compute-funnel/`, { project_id: projectId, days }),
   },
 }

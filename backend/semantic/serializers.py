@@ -6,12 +6,8 @@ from semantic.models import EventMapping
 class EventMappingSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventMapping
-        fields = ['id', 'event_name', 'category', 'is_auto_detected', 'created_at', 'updated_at']
+        fields = ['id', 'event_name', 'category', 'used_in_funnel', 'is_auto_detected', 'created_at', 'updated_at']
         read_only_fields = ['id', 'event_name', 'is_auto_detected', 'created_at', 'updated_at']
-
-
-class EventMappingBulkSerializer(serializers.Serializer):
-    mappings = EventMappingSerializer(many=True)
 
 
 class DetectResultSerializer(serializers.Serializer):
@@ -19,3 +15,4 @@ class DetectResultSerializer(serializers.Serializer):
     suggested_category = serializers.CharField()
     confidence = serializers.FloatField()
     status = serializers.CharField()
+    used_in_funnel = serializers.BooleanField()

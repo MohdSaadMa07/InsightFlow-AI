@@ -72,7 +72,15 @@ DATABASES = {
         'PASSWORD': os.getenv('DB_PASSWORD', ''),
         'HOST': os.getenv('DB_HOST', ''),
         'PORT': os.getenv('DB_PORT', ''),
-    }
+    },
+}
+
+DATABASE_ROUTERS = ['config.router.DatabaseRouter']
+
+# BigQuery config (used by events.bigquery when GOOGLE_APPLICATION_CREDENTIALS is set)
+BIGQUERY = {
+    'DATASET': os.getenv('BQ_DATASET', 'insightflow'),
+    'TABLE': os.getenv('BQ_EVENTS_TABLE', 'events'),
 }
 
 AUTH_USER_MODEL = 'users.User'

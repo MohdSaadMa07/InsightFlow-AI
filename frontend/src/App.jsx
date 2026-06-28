@@ -1,23 +1,39 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import Login from './pages/Login'
-import Signup from './pages/Signup'
+import { useState } from 'react'
 import Dashboard from './pages/Dashboard'
+import Funnels from './pages/Funnels'
 import Mapping from './pages/Mapping'
-import Layout from './components/Layout'
+import ProjectHub from './pages/ProjectHub'
+import ProjectLayout from './components/ProjectLayout'
+import Placeholder from './pages/Placeholder'
 import Landing from './pages/Landing'
 
 export default function App() {
-  const token = localStorage.getItem('token')
+  const [token, setToken] = useState(localStorage.getItem('token'))
+
+  const handleAuth = (newToken) => {
+    localStorage.setItem('token', newToken)
+    setToken(newToken)
+  }
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={token ? <Navigate to="/dashboard" /> : <Landing />} />
-        <Route path="/login" element={token ? <Navigate to="/dashboard" /> : <Login />} />
-        <Route path="/signup" element={token ? <Navigate to="/dashboard" /> : <Signup />} />
-        <Route element={<Layout />}>
-          <Route path="/dashboard" element={token ? <Dashboard /> : <Navigate to="/login" />} />
-          <Route path="/mapping" element={token ? <Mapping /> : <Navigate to="/login" />} />
+        <Route path="/" element={token ? <Navigate to="/projects" /> : <Landing onAuth={handleAuth} />} />
+        
+        <Route path="/projects" element={token ? <ProjectHub /> : <Navigate to="/" />} />
+        
+        <Route path="/project/:id" element={token ? <ProjectLayout /> : <Navigate to="/" />}>
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="funnels" element={<Funnels />} />
+
+          <Route path="mapping" element={<Mapping />} />
+          <Route path="settings" element={<Placeholder title="Settings" />} />
+          
+          <Route index element={<Navigate to="dashboard" replace />} />
         </Route>
+        
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   )

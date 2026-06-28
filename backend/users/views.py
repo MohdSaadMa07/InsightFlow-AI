@@ -37,7 +37,7 @@ def signup(request):
 
     project = Project.objects.create(
         organization=org,
-        name=data['project_name']
+        name='Default Project'
     )
 
     api_key = APIKey.objects.create(
