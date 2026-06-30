@@ -19,7 +19,6 @@ const FUNNEL_STEP_LABELS = {
   engagement: 'Engagement',
   purchase_intent: 'Purchase Intent',
   conversion: 'Conversion',
-  exit: 'Exit',
 }
 
 function dropColor(pct) {
@@ -65,20 +64,30 @@ export default function Funnels() {
   const [rows, setRows] = useState([])
   const [mappings, setMappings] = useState([])
   const [days, setDays] = useState(30)
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
+  const [useCustom, setUseCustom] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
     if (!selected) return
-    api.dashboard.funnels(selected, days).then(setRows).catch(() => {})
+    if (useCustom && dateFrom && dateTo) {
+      api.dashboard.funnels(selected, days, dateFrom, dateTo).then(setRows).catch(() => {})
+    } else {
+      api.dashboard.funnels(selected, days).then(setRows).catch(() => {})
+    }
     api.mapping.list(selected).then(setMappings).catch(() => {})
-  }, [selected, days])
+  }, [selected, days, useCustom, dateFrom, dateTo])
 
   async function refreshFunnel() {
     if (!selected) return
     setRefreshing(true)
     try {
-      const data = await api.mapping.computeFunnel(selected, days)
-      if (data && data.funnel_id) {
+      await api.mapping.computeFunnel(selected, days)
+      if (useCustom && dateFrom && dateTo) {
+        const newRows = await api.dashboard.funnels(selected, days, dateFrom, dateTo)
+        setRows(newRows || [])
+      } else {
         const newRows = await api.dashboard.funnels(selected, days)
         setRows(newRows || [])
       }
@@ -110,14 +119,32 @@ export default function Funnels() {
             Track how users progress through each stage of your product
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button className="btn btn-sm" onClick={refreshFunnel} disabled={refreshing} style={{ fontSize: 11 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <button className="btn btn-sm btn-gray" onClick={refreshFunnel} disabled={refreshing} style={{ fontSize: 11 }}>
             {refreshing ? 'Refreshing...' : 'Refresh'}
           </button>
           <div className="period-group">
             {[7, 30, 90].map(d => (
-              <button key={d} className={`period-btn${days === d ? ' active' : ''}`} onClick={() => setDays(d)}>{d}d</button>
+              <button key={d} className={`period-btn${days === d && !useCustom ? ' active' : ''}`} onClick={() => { setDays(d); setUseCustom(false); setDateFrom(''); setDateTo('') }}>{d}d</button>
             ))}
+          </div>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <label style={{ fontSize: 11, color: '#606088', margin: 0, textTransform: 'none', letterSpacing: 0, whiteSpace: 'nowrap' }}>From</label>
+            <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
+              style={{ fontSize: 12, padding: '5px 8px', width: 140, borderRadius: 8, border: '1px solid #1E1E3A', background: '#0A0A18', color: '#EAEAFA' }} />
+            <label style={{ fontSize: 11, color: '#606088', margin: 0, textTransform: 'none', letterSpacing: 0, whiteSpace: 'nowrap' }}>To</label>
+            <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
+              style={{ fontSize: 12, padding: '5px 8px', width: 140, borderRadius: 8, border: '1px solid #1E1E3A', background: '#0A0A18', color: '#EAEAFA' }} />
+            <button className="btn btn-sm btn-gray" onClick={() => {
+              if (!dateFrom || !dateTo) return
+              setUseCustom(true)
+              const [y1, m1, d1] = dateFrom.split('-').map(Number)
+              const [y2, m2, d2] = dateTo.split('-').map(Number)
+              const from = new Date(y1, m1 - 1, d1)
+              const to = new Date(y2, m2 - 1, d2)
+              const diff = Math.round((to - from) / (1000 * 60 * 60 * 24))
+              setDays(Math.max(1, diff))
+            }} disabled={!dateFrom || !dateTo}>Apply</button>
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
 class DatabaseRouter:
     """
     Routes models to PostgreSQL ('default') for all operational data.
-    Events use a custom manager that queries BigQuery transparently.
+    Events use a custom manager that queries ClickHouse transparently.
     """
 
     def db_for_read(self, model, **hints):

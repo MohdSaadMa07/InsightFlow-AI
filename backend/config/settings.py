@@ -77,10 +77,24 @@ DATABASES = {
 
 DATABASE_ROUTERS = ['config.router.DatabaseRouter']
 
-# BigQuery config (used by events.bigquery when GOOGLE_APPLICATION_CREDENTIALS is set)
-BIGQUERY = {
-    'DATASET': os.getenv('BQ_DATASET', 'insightflow'),
-    'TABLE': os.getenv('BQ_EVENTS_TABLE', 'events'),
+# ClickHouse config (used by events.clickhouse when ClickHouse is reachable)
+CLICKHOUSE = {
+    'HOST': os.getenv('CH_HOST', 'localhost'),
+    'PORT': int(os.getenv('CH_PORT', '8123')),
+    'USER': os.getenv('CH_USER', 'default'),
+    'PASSWORD': os.getenv('CH_PASSWORD', ''),
+    'DATABASE': os.getenv('CH_DATABASE', 'insightflow'),
+    'TABLE': os.getenv('CH_TABLE', 'events'),
+}
+
+# Kafka config
+KAFKA = {
+    'BOOTSTRAP_SERVERS': os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092'),
+    'TOPIC_EVENTS': os.getenv('KAFKA_TOPIC_EVENTS', 'events'),
+    'CONSUMER_GROUP_CLICKHOUSE': os.getenv('KAFKA_CG_CLICKHOUSE', 'insightflow.clickhouse'),
+    'CONSUMER_GROUP_AGG': os.getenv('KAFKA_CG_AGG', 'insightflow.aggregator'),
+    'BATCH_SIZE': int(os.getenv('KAFKA_BATCH_SIZE', '1000')),
+    'BATCH_INTERVAL_MS': int(os.getenv('KAFKA_BATCH_INTERVAL_MS', '500')),
 }
 
 AUTH_USER_MODEL = 'users.User'

@@ -146,7 +146,7 @@ def compute_funnel(request):
         project=project,
         name='Main Funnel',
         defaults={
-            'steps': ['discovery', 'purchase_intent', 'checkout', 'conversion'],
+            'steps': ['discovery', 'engagement', 'purchase_intent', 'conversion'],
         }
     )
 

@@ -1,0 +1,7 @@
+backend/.env
+backend/seed_data.py
+backend/tmp_*.py
+__pycache__/
+*.pyc
+node_modules/
+dist/

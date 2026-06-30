@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from projects.models import APIKey, Project
-from projects.serializers import ProjectSerializer
+from projects.serializers import APIKeySerializer, ProjectSerializer
 
 
 def get_organization(user):
@@ -60,3 +60,33 @@ def project_detail(request, project_id):
 
     project.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_keys(request, project_id):
+    org = get_organization(request.user)
+    if not org:
+        return Response({'error': 'No organization found'}, status=status.HTTP_404_NOT_FOUND)
+    try:
+        project = Project.objects.get(id=project_id, organization=org)
+    except Project.DoesNotExist:
+        return Response({'error': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
+    keys = APIKey.objects.filter(project=project).order_by('-is_active', '-created_at')
+    return Response(APIKeySerializer(keys, many=True).data)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def regenerate_key(request, project_id):
+    org = get_organization(request.user)
+    if not org:
+        return Response({'error': 'No organization found'}, status=status.HTTP_404_NOT_FOUND)
+    try:
+        project = Project.objects.get(id=project_id, organization=org)
+    except Project.DoesNotExist:
+        return Response({'error': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    APIKey.objects.filter(project=project, is_active=True).update(is_active=False)
+    new_key = APIKey.objects.create(project=project, name='Default')
+    return Response(APIKeySerializer(new_key).data, status=status.HTTP_201_CREATED)

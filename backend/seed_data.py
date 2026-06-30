@@ -98,3 +98,62 @@ for name in event_names:
     cnt = Event.objects.filter(project=project, event_name=name).count()
     users_cnt = Event.objects.filter(project=project, event_name=name).values('user_id').distinct().count()
     print(f'  {name:15s}: {cnt:4d} events, {users_cnt:3d} unique users')
+
+print()
+print('Computing analytics...')
+
+today = datetime.utcnow().date()
+from analytics.models import DailyActiveUser, EventCount, RetentionCurve
+
+# DailyActiveUser + EventCount for each day
+for day_offset in range(90):
+    date = today - timedelta(days=day_offset)
+    dau = Event.objects.filter(
+        project=project, timestamp__date=date
+    ).values('user_id').distinct().count()
+    DailyActiveUser.objects.update_or_create(
+        project=project, date=date, defaults={'count': dau}
+    )
+    for name in event_names:
+        cnt = Event.objects.filter(
+            project=project, event_name=name, timestamp__date=date
+        ).count()
+        if cnt > 0:
+            EventCount.objects.update_or_create(
+                project=project, event_name=name, date=date,
+                defaults={'count': cnt}
+            )
+
+# RetentionCurve for each day
+for day_offset in range(90):
+    check_date = today - timedelta(days=day_offset)
+    for period_days, label in [(1, 'D1'), (7, 'D7'), (30, 'D30')]:
+        cohort_date = check_date - timedelta(days=period_days)
+        min_date = today - timedelta(days=90)
+        if cohort_date < min_date:
+            continue
+        total = Event.objects.filter(
+            project=project, timestamp__date=cohort_date
+        ).values('user_id').distinct().count()
+        if total == 0:
+            continue
+        retained = Event.objects.filter(
+            project=project, timestamp__date=check_date,
+            user_id__in=Event.objects.filter(
+                project=project, timestamp__date=cohort_date
+            ).values('user_id')
+        ).values('user_id').distinct().count()
+        if retained > 0:
+            RetentionCurve.objects.update_or_create(
+                project=project, cohort_date=cohort_date, period=label,
+                defaults={
+                    'total_users': total,
+                    'retained_users': retained,
+                    'rate': round(retained / total, 4),
+                }
+            )
+
+dau_count = DailyActiveUser.objects.filter(project=project).count()
+ec_count = EventCount.objects.filter(project=project).count()
+rc_count = RetentionCurve.objects.filter(project=project).count()
+print(f'Created {dau_count} DAU records, {ec_count} event count records, {rc_count} retention records')

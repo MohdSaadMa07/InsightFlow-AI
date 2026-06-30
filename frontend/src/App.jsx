@@ -5,7 +5,7 @@ import Funnels from './pages/Funnels'
 import Mapping from './pages/Mapping'
 import ProjectHub from './pages/ProjectHub'
 import ProjectLayout from './components/ProjectLayout'
-import Placeholder from './pages/Placeholder'
+import Settings from './pages/Settings'
 import Landing from './pages/Landing'
 
 export default function App() {
@@ -28,7 +28,7 @@ export default function App() {
           <Route path="funnels" element={<Funnels />} />
 
           <Route path="mapping" element={<Mapping />} />
-          <Route path="settings" element={<Placeholder title="Settings" />} />
+          <Route path="settings" element={<Settings />} />
           
           <Route index element={<Navigate to="dashboard" replace />} />
         </Route>

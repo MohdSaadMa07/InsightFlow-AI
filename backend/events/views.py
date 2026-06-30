@@ -6,8 +6,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from events.bigquery import bq
-from events.models import Event
+from events.kafka import producer
 from events.serializers import EventSerializer
 from projects.models import APIKey
 
@@ -29,32 +28,12 @@ def track_event(request):
             status=status.HTTP_401_UNAUTHORIZED
         )
 
-    ts = data.get('timestamp', timezone.now())
+    producer.produce({
+        'project_id': api_key.project.id,
+        'user_id': data.get('user_id') or '',
+        'event_name': data['event'],
+        'properties': json.dumps(data.get('properties', {})),
+        'timestamp': (data.get('timestamp') or timezone.now()).isoformat(),
+    })
 
-    # Write to operational database
-    event = Event.objects.create(
-        project=api_key.project,
-        event_name=data['event'],
-        user_id=data.get('user_id') or None,
-        properties=data.get('properties', {}),
-        timestamp=ts,
-    )
-
-    # Stream to BigQuery asynchronously
-    if bq.available:
-        bq.insert_rows([{
-            'event_id': event.id,
-            'project_id': api_key.project.id,
-            'user_id': data.get('user_id') or '',
-            'event_name': data['event'],
-            'properties': json.dumps(data.get('properties', {})),
-            'timestamp': ts.isoformat(),
-        }])
-
-    from events.tasks import process_event
-    process_event.delay(event.id)
-
-    return Response(
-        {'status': 'ok', 'event_id': event.id},
-        status=status.HTTP_201_CREATED
-    )
+    return Response({'status': 'ok'}, status=status.HTTP_201_CREATED)

@@ -1,7 +1,6 @@
 from django.db import models
 
 from projects.models import Project
-from events.query import EventManager
 
 
 class Event(models.Model):
@@ -13,8 +12,6 @@ class Event(models.Model):
     properties = models.JSONField(default=dict, blank=True)
     timestamp = models.DateTimeField(db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
-    objects = EventManager()
 
     class Meta:
         indexes = [

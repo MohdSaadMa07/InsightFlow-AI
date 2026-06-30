@@ -20,7 +20,7 @@ class EventMapping(models.Model):
         ('unknown', 'Unknown'),
     ]
 
-    FUNNEL_CATEGORIES = ['discovery', 'purchase_intent', 'checkout', 'conversion']
+    FUNNEL_CATEGORIES = ['discovery', 'engagement', 'purchase_intent', 'conversion']
 
     project = models.ForeignKey(
         Project, on_delete=models.CASCADE, related_name='event_mappings'

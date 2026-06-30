@@ -320,6 +320,35 @@ tr:hover td { background: rgba(34, 211, 238, 0.02); }
 
 /* LANDING UTILS */
 .btn-text { background: transparent; border: none; color: #8888B0; font-weight: 600; cursor: pointer; transition: color 0.15s; }
+
+.dash { display: flex; flex-direction: column; gap: 24px; }
+.dash-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.dash-title { font-size: 22px; font-weight: 700; color: #EAEAFA; margin: 0; }
+.dash-subtitle { font-size: 13px; color: #606088; margin-top: 4px; }
+.dash-section { display: flex; flex-direction: column; gap: 12px; }
+.dash-section-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.dash-section-header h3 { margin: 0; }
+.dash-section-desc { font-size: 12px; color: #606088; margin-top: 2px; }
+.dash-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+.funnel-group { margin-bottom: 16px; }
+.funnel-group:last-child { margin-bottom: 0; }
+.funnel-steps { display: flex; flex-direction: column; gap: 10px; }
+.funnel-step { }
+.funnel-step-top { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+.funnel-step-count { font-size: 15px; font-weight: 700; color: #EAEAFA; }
+.funnel-step-pct { font-size: 11px; color: #606088; font-weight: 600; }
+.funnel-bar-track { height: 6px; background: #1E1E3A; border-radius: 3px; overflow: hidden; }
+.funnel-bar-fill { height: 100%; background: linear-gradient(90deg, #22D3EE, #06B6D4); border-radius: 3px; transition: width 0.4s; }
+.funnel-step-name { font-size: 12px; color: #8888B0; margin-top: 3px; font-weight: 500; }
+.funnel-drop { margin-top: 2px; }
+.funnel-drop .badge { font-size: 10px; padding: 1px 8px; }
+
+.retention-grid { display: flex; gap: 16px; justify-content: center; }
+.retention-tile { text-align: center; flex: 1; }
+.retention-ring { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+.retention-ring-value { position: absolute; font-size: 14px; font-weight: 800; color: #34D399; }
+.retention-tile-label { font-size: 11px; color: #606088; margin-top: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
 .btn-text:hover { color: #EAEAFA; }
 .btn-lg { padding: 14px 32px; font-size: 16px; border-radius: 12px; }
 .glass-btn { background: rgba(255,255,255,0.04); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.06); }

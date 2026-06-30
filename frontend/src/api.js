@@ -38,12 +38,24 @@ export const api = {
     list: () => api.get('/api/v1/projects/'),
     create: (name) => api.post('/api/v1/projects/', { name }),
     get: (id) => api.get(`/api/v1/projects/${id}/`),
+    keys: (id) => api.get(`/api/v1/projects/${id}/keys/`),
+    regenerateKey: (id) => api.post(`/api/v1/projects/${id}/regenerate-key/`),
   },
 
   dashboard: {
     overview: (projectId) => api.get(`/api/v1/dashboard/overview/?project_id=${projectId}`),
-    events: (projectId, days = 7) => api.get(`/api/v1/dashboard/events/?project_id=${projectId}&days=${days}`),
-    funnels: (projectId, days = 30) => api.get(`/api/v1/dashboard/funnels/?project_id=${projectId}&days=${days}`),
+    events: (projectId, days = 7, startDate, endDate) => {
+      let url = `/api/v1/dashboard/events/?project_id=${projectId}`
+      if (startDate && endDate) url += `&start_date=${startDate}&end_date=${endDate}`
+      else url += `&days=${days}`
+      return api.get(url)
+    },
+    funnels: (projectId, days = 30, startDate, endDate) => {
+      let url = `/api/v1/dashboard/funnels/?project_id=${projectId}`
+      if (startDate && endDate) url += `&start_date=${startDate}&end_date=${endDate}`
+      else url += `&days=${days}`
+      return api.get(url)
+    },
     retention: (projectId) => api.get(`/api/v1/dashboard/retention/?project_id=${projectId}`),
   },
 
