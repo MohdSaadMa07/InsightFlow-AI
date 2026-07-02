@@ -1,12 +1,47 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { api } from '../api'
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid,
+  PieChart, Pie, Cell
 } from 'recharts'
 
-const COLORS = ['#22D3EE', '#EC4899', '#34D399', '#FBBF24', '#A78BFA', '#F87171', '#F97316']
+const COLORS = ['#22D3EE', '#EC4899', '#34D399', '#FBBF24', '#A78BFA', '#F87171', '#F97316', '#06B6D4']
+const PIE_COLORS = ['#22D3EE', '#EC4899', '#34D399', '#FBBF24', '#A78BFA', '#F87171', '#F97316', '#06B6D4', '#8B5CF6', '#14B8A6']
 const FUNNEL_ORDER = ['pageview', 'view_product', 'signup', 'add_to_cart', 'purchase']
+const POLL_INTERVAL = 10000
+
+function formatDuration(seconds) {
+  if (!seconds || seconds === 0) return '0s'
+  const mins = Math.floor(seconds / 60)
+  const secs = Math.round(seconds % 60)
+  if (mins > 0) return `${mins}m ${secs}s`
+  return `${secs}s`
+}
+
+function getDomainFromUrl(url) {
+  try {
+    return new URL(url).hostname.replace('www.', '')
+  } catch {
+    return url
+  }
+}
+
+function InsightIcon({ type }) {
+  const icons = {
+    trend: '📈',
+    anomaly: '⚠️',
+    funnel_bottleneck: '🔻',
+    suggestion: '💡',
+    behavior: '👤',
+  }
+  return <span style={{ fontSize: 20 }}>{icons[type] || '📊'}</span>
+}
+
+function SeverityDot({ severity }) {
+  const colors = { critical: '#F87171', warning: '#FBBF24', info: '#22D3EE' }
+  return <span style={{ width: 8, height: 8, borderRadius: '50%', background: colors[severity] || colors.info, display: 'inline-block', flexShrink: 0 }} />
+}
 
 export default function Dashboard() {
   const { selected } = useOutletContext()
@@ -18,8 +53,27 @@ export default function Dashboard() {
   const [dateTo, setDateTo] = useState('')
   const [useCustom, setUseCustom] = useState(false)
 
+  const [realtime, setRealtime] = useState(null)
+  const [pages, setPages] = useState([])
+  const [countries, setCountries] = useState([])
+  const [devices, setDevices] = useState(null)
+  const [sessions, setSessions] = useState(null)
+  const [insights, setInsights] = useState([])
+  const [timeAgo, setTimeAgo] = useState('')
+
+  const pollRef = useRef(null)
+
+  const loadRealtime = useCallback(() => {
+    if (!selected) return
+    api.dashboard.realtime(selected).then(data => {
+      setRealtime(data)
+      setTimeAgo(new Date().toLocaleTimeString())
+    }).catch(() => {})
+  }, [selected])
+
   useEffect(() => {
     if (!selected) return
+
     api.dashboard.overview(selected).then(setOverview).catch(() => {})
     if (useCustom && dateFrom && dateTo) {
       api.dashboard.events(selected, days, dateFrom, dateTo).then(setEvents).catch(() => {})
@@ -27,7 +81,19 @@ export default function Dashboard() {
       api.dashboard.events(selected, days).then(setEvents).catch(() => {})
     }
     api.dashboard.retention(selected).then(setRetention).catch(() => {})
-  }, [selected, days, useCustom, dateFrom, dateTo])
+    api.dashboard.pages(selected, days).then(setPages).catch(() => {})
+    api.dashboard.countries(selected).then(setCountries).catch(() => {})
+    api.dashboard.devices(selected).then(setDevices).catch(() => {})
+    api.dashboard.sessions(selected).then(setSessions).catch(() => {})
+    api.dashboard.insights(selected).then(setInsights).catch(() => {})
+
+    loadRealtime()
+    pollRef.current = setInterval(loadRealtime, POLL_INTERVAL)
+
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current)
+    }
+  }, [selected, days, useCustom, dateFrom, dateTo, loadRealtime])
 
   function setPreset(d) {
     setDays(d)
@@ -78,6 +144,43 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Real-time Live Indicator */}
+      <div className="card" style={{ padding: '16px 24px' }}>
+        <div className="flex-between">
+          <div className="flex" style={{ gap: 12 }}>
+            <span style={{
+              width: 10, height: 10, borderRadius: '50%',
+              background: realtime?.online_users > 0 ? '#34D399' : '#606088',
+              display: 'inline-block',
+              boxShadow: realtime?.online_users > 0 ? '0 0 12px rgba(52, 211, 153, 0.6)' : 'none',
+              animation: realtime?.online_users > 0 ? 'pulse 2s infinite' : 'none',
+            }} />
+            <div>
+              <span className="bold" style={{ fontSize: 18, color: '#EAEAFA' }}>
+                {realtime?.online_users ?? '-'}
+              </span>
+              <span className="text-muted" style={{ fontSize: 12, marginLeft: 6 }}>
+                visitors online now
+              </span>
+            </div>
+          </div>
+          <div className="flex" style={{ gap: 16 }}>
+            <div className="text-center">
+              <div className="text-sm bold" style={{ color: '#C0C0D8' }}>{realtime?.events_last_5min ?? '-'}</div>
+              <div className="text-xs text-muted">Events (5min)</div>
+            </div>
+            <div className="text-center">
+              <div className="text-sm bold" style={{ color: '#C0C0D8' }}>{realtime?.users_last_5min ?? '-'}</div>
+              <div className="text-xs text-muted">Users (5min)</div>
+            </div>
+            <div className="text-xs text-muted" style={{ alignSelf: 'center' }}>
+              Updated {timeAgo}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Stat Cards */}
       <div className="stat-row">
         <div className="stat-card">
           <div className="stat-value">{overview?.dau ?? '-'}</div>
@@ -91,8 +194,64 @@ export default function Dashboard() {
           <div className="stat-value">{overview?.total_events?.toLocaleString() ?? '-'}</div>
           <div className="stat-label">Total Events</div>
         </div>
+        <div className="stat-card">
+          <div className="stat-value">{sessions?.total_sessions?.toLocaleString() ?? '-'}</div>
+          <div className="stat-label">Total Sessions</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-value">{sessions ? formatDuration(sessions.avg_duration_seconds) : '-'}</div>
+          <div className="stat-label">Avg Session Duration</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-value" style={{ color: (sessions?.bounce_rate ?? 0) > 50 ? '#F87171' : '#34D399' }}>
+            {sessions ? `${sessions.bounce_rate}%` : '-'}
+          </div>
+          <div className="stat-label">Bounce Rate</div>
+        </div>
       </div>
 
+      {/* Insights Panel */}
+      {insights.length > 0 && (
+        <div className="dash-section">
+          <div className="dash-section-header">
+            <div>
+              <h3>Insights</h3>
+              <p className="dash-section-desc">Automated observations about your data</p>
+            </div>
+          </div>
+          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {insights.map((insight, i) => (
+                <div key={i} style={{
+                  display: 'flex', gap: 14, padding: '16px 20px',
+                  borderBottom: i < insights.length - 1 ? '1px solid #1E1E3A' : 'none',
+                  alignItems: 'flex-start',
+                }}>
+                  <InsightIcon type={insight.type} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="flex" style={{ gap: 8, marginBottom: 2 }}>
+                      <SeverityDot severity={insight.severity} />
+                      <span className="bold" style={{ fontSize: 13, color: '#EAEAFA' }}>{insight.title}</span>
+                      <span style={{
+                        fontSize: 10, padding: '1px 8px', borderRadius: 4,
+                        background: insight.type === 'anomaly' ? 'rgba(248, 113, 113, 0.1)' :
+                          insight.type === 'suggestion' ? 'rgba(251, 191, 36, 0.1)' :
+                          'rgba(34, 211, 238, 0.1)',
+                        color: insight.type === 'anomaly' ? '#F87171' :
+                          insight.type === 'suggestion' ? '#FBBF24' : '#22D3EE',
+                        fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em',
+                      }}>{insight.type.replace('_', ' ')}</span>
+                    </div>
+                    <p className="text-sm text-muted" style={{ lineHeight: 1.5 }}>{insight.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Event Trends */}
       <div className="dash-section">
         <div className="dash-section-header">
           <div>
@@ -139,35 +298,75 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="dash-section">
+      {/* Top Pages + Countries + Devices Grid */}
+      <div className="dash-grid-2">
+        {/* Top Pages */}
+        <div className="dash-section">
           <div className="dash-section-header">
             <div>
-              <h3>Retention</h3>
-              <p className="dash-section-desc">How often users return after their first visit</p>
+              <h3>Top Pages</h3>
+              <p className="dash-section-desc">Most visited pages in this period</p>
             </div>
           </div>
-          <div className="card">
-            {retention.length === 0 ? (
-              <div className="empty-state">No retention data yet</div>
+          <div className="card" style={{ padding: 0 }}>
+            {pages.length === 0 ? (
+              <div className="empty-state">No page data yet</div>
             ) : (
-              <div className="retention-grid">
-                {['D1', 'D7', 'D30'].map(p => {
-                  const items = retention.filter(r => r.period === p)
-                  if (items.length === 0) return null
-                  const avg = (items.reduce((s, r) => s + r.rate, 0) / items.length * 100).toFixed(1)
-                  const label = p === 'D1' ? '1 Day' : p === 'D7' ? '7 Days' : '30 Days'
+              <div style={{ overflowX: 'auto' }}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Page</th>
+                      <th style={{ textAlign: 'right' }}>Views</th>
+                      <th style={{ textAlign: 'right' }}>Visitors</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pages.slice(0, 10).map((p, i) => (
+                      <tr key={i}>
+                        <td style={{ maxWidth: 240, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <span className="text-sm">{getDomainFromUrl(p.page)}</span>
+                          <span className="text-xs text-muted" style={{ marginLeft: 6 }}>{p.page.replace(/^https?:\/\//, '').substring(0, 40)}</span>
+                        </td>
+                        <td style={{ textAlign: 'right' }}><span className="bold">{p.views}</span></td>
+                        <td style={{ textAlign: 'right' }}><span className="text-muted">{p.unique_visitors}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Countries */}
+        <div className="dash-section">
+          <div className="dash-section-header">
+            <div>
+              <h3>Countries</h3>
+              <p className="dash-section-desc">User distribution by country</p>
+            </div>
+          </div>
+          <div className="card" style={{ padding: 0 }}>
+            {countries.length === 0 ? (
+              <div className="empty-state">No country data yet</div>
+            ) : (
+              <div style={{ padding: 16 }}>
+                {countries.slice(0, 8).map((c, i) => {
+                  const maxUsers = countries[0]?.users || 1
+                  const pct = (c.users / maxUsers) * 100
                   return (
-                    <div key={p} className="retention-tile">
-                      <div className="retention-ring">
-                        <svg width="80" height="80" viewBox="0 0 80 80">
-                          <circle cx="40" cy="40" r="34" fill="none" stroke="#1E1E3A" strokeWidth="6" />
-                          <circle cx="40" cy="40" r="34" fill="none" stroke="#34D399" strokeWidth="6"
-                            strokeDasharray={`${(parseFloat(avg) / 100) * 213.6} 213.6`}
-                            strokeLinecap="round" transform="rotate(-90 40 40)" />
-                        </svg>
-                        <span className="retention-ring-value">{avg}%</span>
+                    <div key={c.country} style={{ marginBottom: 12 }}>
+                      <div className="flex-between" style={{ marginBottom: 4 }}>
+                        <div className="flex" style={{ gap: 8 }}>
+                          <span className="text-xs text-muted" style={{ width: 16 }}>{i + 1}</span>
+                          <span className="text-sm">{c.country}</span>
+                        </div>
+                        <span className="text-sm bold">{c.users.toLocaleString()}</span>
                       </div>
-                      <div className="retention-tile-label">{label}</div>
+                      <div style={{ height: 4, background: '#1E1E3A', borderRadius: 2, overflow: 'hidden' }}>
+                        <div style={{ width: `${pct}%`, height: '100%', background: PIE_COLORS[i % PIE_COLORS.length], borderRadius: 2, transition: 'width 0.4s' }} />
+                      </div>
                     </div>
                   )
                 })}
@@ -175,6 +374,140 @@ export default function Dashboard() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Devices Section */}
+      <div className="dash-section">
+        <div className="dash-section-header">
+          <div>
+            <h3>Devices & Browsers</h3>
+            <p className="dash-section-desc">Breakdown by device type, browser, and OS</p>
+          </div>
+        </div>
+        <div className="dash-grid-2">
+          <div className="card">
+            <h3 style={{ fontSize: 13, marginBottom: 16 }}>Device Types</h3>
+            {!devices?.device_types?.length ? (
+              <div className="empty-state" style={{ padding: '20px' }}>No data</div>
+            ) : (
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie
+                    data={devices.device_types}
+                    cx="50%" cy="50%" innerRadius={50} outerRadius={80}
+                    dataKey="users" nameKey="name"
+                    stroke="none"
+                  >
+                    {devices.device_types.map((_, i) => (
+                      <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ background: '#0D0D1A', border: '1px solid #1E1E3A', borderRadius: 8, fontSize: 12 }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 11, color: '#606088' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+          <div className="card">
+            <h3 style={{ fontSize: 13, marginBottom: 16 }}>Browsers</h3>
+            {!devices?.browsers?.length ? (
+              <div className="empty-state" style={{ padding: '20px' }}>No data</div>
+            ) : (
+              <div>
+                {devices.browsers.slice(0, 6).map((b, i) => {
+                  const maxUsers = devices.browsers[0]?.users || 1
+                  const pct = (b.users / maxUsers) * 100
+                  return (
+                    <div key={b.name} style={{ marginBottom: 10 }}>
+                      <div className="flex-between" style={{ marginBottom: 3 }}>
+                        <span className="text-sm">{b.name}</span>
+                        <span className="text-sm bold">{b.users.toLocaleString()}</span>
+                      </div>
+                      <div style={{ height: 4, background: '#1E1E3A', borderRadius: 2, overflow: 'hidden' }}>
+                        <div style={{ width: `${pct}%`, height: '100%', background: PIE_COLORS[i % PIE_COLORS.length], borderRadius: 2, transition: 'width 0.4s' }} />
+                      </div>
+                    </div>
+                  )
+                })}
+                {devices.browsers.length > 6 && (
+                  <div className="text-xs text-muted text-center" style={{ marginTop: 8 }}>+{devices.browsers.length - 6} more</div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="card">
+          <h3 style={{ fontSize: 13, marginBottom: 16 }}>Operating Systems</h3>
+          {!devices?.os?.length ? (
+            <div className="empty-state" style={{ padding: '20px' }}>No data</div>
+          ) : (
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              {devices.os.map((o, i) => {
+                const maxUsers = devices.os[0]?.users || 1
+                const pct = (o.users / maxUsers) * 100
+                return (
+                  <div key={o.name} style={{ flex: 1, minWidth: 120 }}>
+                    <div className="flex-between" style={{ marginBottom: 4 }}>
+                      <span className="text-sm">{o.name}</span>
+                      <span className="text-xs text-muted">{o.users.toLocaleString()}</span>
+                    </div>
+                    <div style={{ height: 4, background: '#1E1E3A', borderRadius: 2, overflow: 'hidden' }}>
+                      <div style={{ width: `${pct}%`, height: '100%', background: PIE_COLORS[i % PIE_COLORS.length], borderRadius: 2, transition: 'width 0.4s' }} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Retention */}
+      <div className="dash-section">
+        <div className="dash-section-header">
+          <div>
+            <h3>Retention</h3>
+            <p className="dash-section-desc">How often users return after their first visit</p>
+          </div>
+        </div>
+        <div className="card">
+          {retention.length === 0 ? (
+            <div className="empty-state">No retention data yet</div>
+          ) : (
+            <div className="retention-grid">
+              {['D1', 'D7', 'D30'].map(p => {
+                const items = retention.filter(r => r.period === p)
+                if (items.length === 0) return null
+                const avg = (items.reduce((s, r) => s + r.rate, 0) / items.length * 100).toFixed(1)
+                const label = p === 'D1' ? '1 Day' : p === 'D7' ? '7 Days' : '30 Days'
+                return (
+                  <div key={p} className="retention-tile">
+                    <div className="retention-ring">
+                      <svg width="80" height="80" viewBox="0 0 80 80">
+                        <circle cx="40" cy="40" r="34" fill="none" stroke="#1E1E3A" strokeWidth="6" />
+                        <circle cx="40" cy="40" r="34" fill="none" stroke="#34D399" strokeWidth="6"
+                          strokeDasharray={`${(parseFloat(avg) / 100) * 213.6} 213.6`}
+                          strokeLinecap="round" transform="rotate(-90 40 40)" />
+                      </svg>
+                      <span className="retention-ring-value">{avg}%</span>
+                    </div>
+                    <div className="retention-tile-label">{label}</div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+      `}</style>
     </div>
   )
 }

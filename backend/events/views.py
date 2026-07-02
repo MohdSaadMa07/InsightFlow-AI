@@ -34,6 +34,8 @@ def track_event(request):
         'event_name': data['event'],
         'properties': json.dumps(data.get('properties', {})),
         'timestamp': (data.get('timestamp') or timezone.now()).isoformat(),
+        'ip_address': request.META.get('REMOTE_ADDR', ''),
+        'user_agent': request.META.get('HTTP_USER_AGENT', ''),
     })
 
     return Response({'status': 'ok'}, status=status.HTTP_201_CREATED)

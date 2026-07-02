@@ -13,6 +13,7 @@
     queue: [],
     initialized: false,
     userId: null,
+    sessionId: null,
   };
 
   function generateId() {
@@ -34,11 +35,38 @@
     return id;
   }
 
+  function getSessionId() {
+    if (state.sessionId) return state.sessionId;
+    try {
+      var sid = sessionStorage.getItem('if_session_id');
+      if (sid) {
+        state.sessionId = sid;
+        return sid;
+      }
+    } catch (e) {}
+    var id = generateId();
+    state.sessionId = id;
+    try { sessionStorage.setItem('if_session_id', id); } catch (e) {}
+    return id;
+  }
+
+  function enrichProperties(properties) {
+    var enriched = properties || {};
+    if (typeof navigator !== 'undefined') {
+      enriched.$session_id = getSessionId();
+      enriched.$language = navigator.language || navigator.userLanguage || '';
+      enriched.$screen_width = screen.width;
+      enriched.$screen_height = screen.height;
+      enriched.$platform = navigator.platform || '';
+    }
+    return enriched;
+  }
+
   function send(eventName, properties) {
     var payload = JSON.stringify({
       api_key: state.apiKey,
       event: eventName,
-      properties: properties || {},
+      properties: enrichProperties(properties || {}),
       user_id: getUserId(),
       timestamp: new Date().toISOString(),
     });

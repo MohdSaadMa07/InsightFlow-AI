@@ -57,6 +57,12 @@ export const api = {
       return api.get(url)
     },
     retention: (projectId) => api.get(`/api/v1/dashboard/retention/?project_id=${projectId}`),
+    realtime: (projectId) => api.get(`/api/v1/dashboard/realtime/?project_id=${projectId}`),
+    pages: (projectId, days = 7) => api.get(`/api/v1/dashboard/pages/?project_id=${projectId}&days=${days}`),
+    countries: (projectId) => api.get(`/api/v1/dashboard/countries/?project_id=${projectId}`),
+    devices: (projectId) => api.get(`/api/v1/dashboard/devices/?project_id=${projectId}`),
+    sessions: (projectId) => api.get(`/api/v1/dashboard/sessions/?project_id=${projectId}`),
+    insights: (projectId) => api.get(`/api/v1/dashboard/insights/?project_id=${projectId}`),
   },
 
   mapping: {

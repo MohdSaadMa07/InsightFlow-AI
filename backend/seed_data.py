@@ -70,13 +70,39 @@ for day_offset in range(90):
         minute = rng.randint(0, 59)
         base_ts = date.replace(hour=hour, minute=minute)
 
+        pages = ['/home', '/products', '/pricing', '/blog', '/docs', '/about', '/contact', '/signup', '/features', '/login']
+        languages = ['en-US', 'en-GB', 'es', 'fr', 'de', 'pt-BR', 'ja', 'en-CA', 'it', 'nl']
+        user_agents = [
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_2) AppleWebKit/605.1.15 Safari/605.1.15',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
+            'Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148',
+            'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/120.0.6099.144 Mobile Safari/537.36',
+            'Mozilla/5.0 (iPad; CPU OS 17_2 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148',
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
+        ]
+        session_id = f'session_{uid}_{day_offset}_{rng.randint(10000, 99999)}'
+        lang = rng.choice(languages)
+        ua = rng.choice(user_agents)
+
         for step_idx, event_name in enumerate(session_seq):
             ts = base_ts + timedelta(seconds=step_idx * rng.randint(3, 60))
+            props = {
+                'seed': True,
+                'session_step': step_idx + 1,
+                '$session_id': session_id,
+                '$language': lang,
+                '$user_agent': ua,
+                '$screen_width': rng.choice([1920, 1440, 1366, 768, 390, 414]),
+                '$screen_height': rng.choice([1080, 900, 768, 1024, 844, 896]),
+            }
+            if event_name == 'pageview':
+                props['url'] = rng.choice(pages)
             batch.append(Event(
                 project=project,
                 user_id=uid,
                 event_name=event_name,
-                properties={'seed': True, 'session_step': step_idx + 1},
+                properties=props,
                 timestamp=ts,
             ))
 
