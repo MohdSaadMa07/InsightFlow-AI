@@ -150,3 +150,12 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
+
+from celery.schedules import crontab
+CELERY_BEAT_SCHEDULE = {
+    'nightly-churn-pipeline': {
+        'task': 'ml.tasks.nightly_pipeline',
+        'schedule': crontab(hour=3, minute=0),  # 3 AM daily
+        'args': (14, 500, False),
+    },
+}

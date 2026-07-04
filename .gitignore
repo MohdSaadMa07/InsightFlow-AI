@@ -1,7 +1,17 @@
 backend/.env
-backend/seed_data.py
-backend/tmp_*.py
-__pycache__/
 *.pyc
+__pycache__/
 node_modules/
 dist/
+
+# ML runtime caches (not training artifacts)
+backend/ml/models/artifacts/churn_cache.json
+backend/ml/models/artifacts/shap_cache.json
+backend/ml/models/artifacts/*.pkl
+
+# Jupyter notebooks
+*.ipynb
+
+# OS files
+.DS_Store
+Thumbs.db

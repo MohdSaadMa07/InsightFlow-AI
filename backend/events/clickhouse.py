@@ -41,8 +41,8 @@ class ClickHouseService:
                 user_agent       String,
                 timestamp        DateTime64(6),
                 created_at       DateTime64(6)
-            ) ENGINE = MergeTree()
-            ORDER BY (project_id, event_name, timestamp)
+            ) ENGINE = ReplacingMergeTree(created_at)
+            ORDER BY (project_id, user_id, timestamp, event_id)
         ''')
 
     @property

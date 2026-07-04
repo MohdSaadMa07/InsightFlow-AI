@@ -1,4 +1,5 @@
 import json
+import uuid
 
 from django.utils import timezone
 
@@ -29,6 +30,7 @@ def track_event(request):
         )
 
     producer.produce({
+        'event_id': str(uuid.uuid4()),
         'project_id': api_key.project.id,
         'user_id': data.get('user_id') or '',
         'event_name': data['event'],

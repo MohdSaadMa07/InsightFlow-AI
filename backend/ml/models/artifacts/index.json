@@ -1,0 +1,76 @@
+{
+  "models": [
+    {
+      "name": "xgboost_churn",
+      "version": "xgboost_churn_v1",
+      "path": "C:\\Users\\mohds\\django-projects\\InsightFlowAI\\backend\\ml\\models\\artifacts\\xgboost_churn_v1.pkl",
+      "created_at": "2026-07-02T07:39:22.397297",
+      "metrics": {
+        "accuracy": 1.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "roc_auc": NaN,
+        "churn_rate_test": 0.0,
+        "churn_rate_train": 0.0,
+        "train_samples": 25,
+        "test_samples": 7,
+        "scale_pos_weight": 1.0
+      }
+    },
+    {
+      "name": "xgboost_churn",
+      "version": "xgboost_churn_v2",
+      "path": "C:\\Users\\mohds\\django-projects\\InsightFlowAI\\backend\\ml\\models\\artifacts\\xgboost_churn_v2.pkl",
+      "created_at": "2026-07-02T07:40:34.407356",
+      "metrics": {
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "roc_auc": 1.0,
+        "churn_rate_test": 0.6666666666666666,
+        "churn_rate_train": 0.19444444444444445,
+        "train_samples": 36,
+        "test_samples": 9,
+        "scale_pos_weight": 4.14
+      }
+    },
+    {
+      "name": "xgboost_churn",
+      "version": "xgboost_churn_v3",
+      "path": "C:\\Users\\mohds\\django-projects\\InsightFlowAI\\backend\\ml\\models\\artifacts\\xgboost_churn_v3.pkl",
+      "created_at": "2026-07-02T07:53:16.615124",
+      "metrics": {
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "roc_auc": NaN,
+        "churn_rate_test": 1.0,
+        "churn_rate_train": 0.9066002490660025,
+        "train_samples": 803,
+        "test_samples": 201,
+        "scale_pos_weight": 0.1
+      }
+    },
+    {
+      "name": "xgboost_churn",
+      "version": "xgboost_churn_v4",
+      "path": "C:\\Users\\mohds\\django-projects\\InsightFlowAI\\backend\\ml\\models\\artifacts\\xgboost_churn_v4.pkl",
+      "created_at": "2026-07-02T07:54:12.252781",
+      "metrics": {
+        "accuracy": 0.8209,
+        "precision": 0.9295,
+        "recall": 0.8529,
+        "f1": 0.8896,
+        "roc_auc": 0.8304,
+        "churn_rate_test": 0.845771144278607,
+        "churn_rate_train": 0.6550435865504358,
+        "train_samples": 803,
+        "test_samples": 201,
+        "scale_pos_weight": 0.53
+      }
+    }
+  ]
+}

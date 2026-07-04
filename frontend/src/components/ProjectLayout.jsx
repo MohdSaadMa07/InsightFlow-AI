@@ -42,8 +42,8 @@ export default function ProjectLayout() {
   const navLinks = [
     { name: 'Dashboard', path: 'dashboard' },
     { name: 'Funnels', path: 'funnels' },
-
     { name: 'Semantic Mapping', path: 'mapping' },
+    { name: 'Churn Risk', path: 'churn' },
     { name: 'Settings', path: 'settings' },
   ]
 
@@ -52,7 +52,7 @@ export default function ProjectLayout() {
       <nav className="topnav">
         <h1>
           <Link to="/projects" style={{ color: 'inherit', textDecoration: 'none' }}>InsightFlow</Link>
-          <span style={{ margin: '0 12px', color: '#404068' }}>/</span>
+          <span style={{ margin: '0 12px', color: '#94a3b8' }}>/</span>
           <span className="current-project-name">{currentProject?.name}</span>
         </h1>
         <div className="user-badge">

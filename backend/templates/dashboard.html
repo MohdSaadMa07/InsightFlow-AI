@@ -6,21 +6,21 @@
   <title>InsightFlow — Dashboard</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #1e293b; min-height: 100vh; }
     .container { max-width: 1000px; margin: 0 auto; padding: 32px 20px; }
-    h1 { font-size: 24px; font-weight: 700; color: #38bdf8; margin-bottom: 24px; }
-    h2 { font-size: 16px; font-weight: 600; color: #94a3b8; margin-bottom: 12px; }
-    h3 { font-size: 14px; font-weight: 600; color: #cbd5e1; margin-bottom: 8px; }
-    label { font-size: 12px; font-weight: 500; color: #94a3b8; display: block; margin-bottom: 4px; }
-    input, select { width: 100%; padding: 10px 14px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: #e2e8f0; font-size: 14px; }
-    input:focus, select:focus { outline: none; border-color: #38bdf8; }
+    h1 { font-size: 24px; font-weight: 700; color: #0f172a; margin-bottom: 24px; }
+    h2 { font-size: 16px; font-weight: 600; color: #475569; margin-bottom: 12px; }
+    h3 { font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 8px; }
+    label { font-size: 12px; font-weight: 500; color: #64748b; display: block; margin-bottom: 4px; }
+    input, select { width: 100%; padding: 10px 14px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; color: #1e293b; font-size: 14px; }
+    input:focus, select:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.1); }
     .btn { padding: 10px 20px; border-radius: 6px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; color: #fff; }
     .btn:hover { opacity: 0.85; }
     .btn-blue { background: #2563eb; }
     .btn-green { background: #16a34a; }
     .btn-red { background: #dc2626; }
-    .btn-gray { background: #475569; }
-    .card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+    .btn-gray { background: #64748b; }
+    .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
     .flex { display: flex; gap: 12px; align-items: center; }
     .flex-wrap { display: flex; gap: 12px; flex-wrap: wrap; }
     .flex-between { display: flex; justify-content: space-between; align-items: center; }
@@ -31,70 +31,71 @@
     .text-sm { font-size: 13px; }
     .text-xs { font-size: 11px; }
     .text-muted { color: #64748b; }
-    .text-green { color: #4ade80; }
-    .text-red { color: #f87171; }
-    .text-blue { color: #38bdf8; }
+    .text-green { color: #16a34a; }
+    .text-red { color: #dc2626; }
+    .text-blue { color: #2563eb; }
     .text-center { text-align: center; }
     .hidden { display: none !important; }
     .bold { font-weight: 600; }
     .mono { font-family: 'SF Mono', 'Fira Code', monospace; }
-    .key-display { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; background: #0f172a; padding: 8px 12px; border-radius: 4px; color: #38bdf8; word-break: break-all; border: 1px solid #334155; }
-    code { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; background: #0f172a; padding: 2px 6px; border-radius: 3px; color: #38bdf8; }
-    pre { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; background: #0f172a; padding: 16px; border-radius: 6px; overflow-x: auto; border: 1px solid #334155; color: #e2e8f0; line-height: 1.5; }
-    .copy-btn { cursor: pointer; padding: 4px 10px; font-size: 11px; background: #334155; border: none; border-radius: 4px; color: #94a3b8; }
-    .copy-btn:hover { background: #475569; color: #e2e8f0; }
+    .key-display { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; background: #f1f5f9; padding: 8px 12px; border-radius: 4px; color: #2563eb; word-break: break-all; border: 1px solid #e2e8f0; }
+    code { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; background: #f1f5f9; padding: 2px 6px; border-radius: 3px; color: #2563eb; }
+    pre { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; background: #f1f5f9; padding: 16px; border-radius: 6px; overflow-x: auto; border: 1px solid #e2e8f0; color: #1e293b; line-height: 1.5; }
+    .copy-btn { cursor: pointer; padding: 4px 10px; font-size: 11px; background: #e2e8f0; border: none; border-radius: 4px; color: #64748b; }
+    .copy-btn:hover { background: #cbd5e1; color: #334155; }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     .alert { padding: 12px 16px; border-radius: 6px; font-size: 13px; margin-bottom: 16px; }
-    .alert-error { background: #3a1a1a; border: 1px solid #7f1d1d; color: #f87171; }
-    .alert-success { background: #1a3a2a; border: 1px solid #166534; color: #4ade80; }
+    .alert-error { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; }
+    .alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; }
     .tabs { display: flex; gap: 4px; }
     .tab { padding: 8px 16px; border-radius: 6px; border: none; font-size: 13px; cursor: pointer; background: transparent; color: #64748b; transition: all 0.15s; }
-    .tab.active { background: #1e293b; color: #38bdf8; }
-    .tab:hover { color: #e2e8f0; }
+    .tab.active { background: #e0e7ff; color: #4338ca; }
+    .tab:hover { color: #1e293b; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th { text-align: left; padding: 8px 12px; color: #64748b; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #334155; }
-    td { padding: 10px 12px; border-bottom: 1px solid #1e293b; }
-    tr:hover td { background: rgba(255,255,255,0.02); }
-    .empty-state { text-align: center; padding: 40px 20px; color: #64748b; font-size: 14px; }
-    nav { background: #1e293b; border-bottom: 1px solid #334155; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; }
-    nav h1 { font-size: 18px; margin: 0; }
-    .user-badge { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #94a3b8; }
-    .stat-card { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 16px; text-align: center; flex: 1; min-width: 140px; }
-    .stat-value { font-size: 28px; font-weight: 700; color: #38bdf8; }
+    th { text-align: left; padding: 8px 12px; color: #64748b; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #e2e8f0; }
+    td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
+    tr:hover td { background: #f8fafc; }
+    .empty-state { text-align: center; padding: 40px 20px; color: #94a3b8; font-size: 14px; }
+    nav { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+    nav h1 { font-size: 18px; margin: 0; color: #0f172a; }
+    .user-badge { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #64748b; }
+    .stat-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; text-align: center; flex: 1; min-width: 140px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .stat-value { font-size: 28px; font-weight: 700; color: #2563eb; }
     .stat-label { font-size: 12px; color: #64748b; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
     .bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 120px; padding: 8px 0; }
     .bar { flex: 1; background: #2563eb; border-radius: 3px 3px 0 0; min-width: 12px; position: relative; transition: height 0.3s; }
     .bar:hover { opacity: 0.8; }
     .bar-label { position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); font-size: 9px; color: #64748b; white-space: nowrap; }
-    .bar-value { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #94a3b8; }
+    .bar-value { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-size: 10px; color: #475569; }
     .pipeline { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    .pipeline-step { background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 12px 16px; text-align: center; min-width: 100px; flex: 1; }
-    .pipeline-arrow { color: #475569; font-size: 18px; }
-    .pipeline-count { font-size: 20px; font-weight: 700; color: #38bdf8; }
-    .pipeline-rate { font-size: 12px; color: #4ade80; }
+    .pipeline-step { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 16px; text-align: center; min-width: 100px; flex: 1; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+    .pipeline-arrow { color: #94a3b8; font-size: 18px; }
+    .pipeline-count { font-size: 20px; font-weight: 700; color: #2563eb; }
+    .pipeline-rate { font-size: 12px; color: #16a34a; }
     .pipeline-name { font-size: 11px; color: #64748b; margin-top: 4px; }
     .retention-grid { display: flex; gap: 12px; flex-wrap: wrap; }
-    .retention-card { background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 12px 16px; text-align: center; min-width: 120px; flex: 1; }
-    .retention-value { font-size: 22px; font-weight: 700; color: #4ade80; }
+    .retention-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 16px; text-align: center; min-width: 120px; flex: 1; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+    .retention-value { font-size: 22px; font-weight: 700; color: #16a34a; }
     .retention-label { font-size: 11px; color: #64748b; }
     .sidebar-layout { display: flex; gap: 20px; }
     .sidebar-panel { width: 260px; flex-shrink: 0; }
     .main-panel { flex: 1; min-width: 0; }
     .project-item { padding: 10px 12px; border-radius: 6px; cursor: pointer; transition: all 0.15s; font-size: 13px; border: 1px solid transparent; margin-bottom: 4px; }
-    .project-item:hover { background: rgba(255,255,255,0.03); }
-    .project-item.active { background: #1e3a5f; border-color: #2563eb; color: #38bdf8; }
-    .period-btn { padding: 4px 10px; font-size: 11px; border-radius: 4px; border: 1px solid #334155; background: transparent; color: #64748b; cursor: pointer; }
+    .project-item:hover { background: #f1f5f9; }
+    .project-item.active { background: #e0e7ff; border-color: #6366f1; color: #4338ca; }
+    .period-btn { padding: 4px 10px; font-size: 11px; border-radius: 4px; border: 1px solid #d1d5db; background: transparent; color: #64748b; cursor: pointer; }
     .period-btn.active { background: #2563eb; border-color: #2563eb; color: #fff; }
-    .key-row { display: flex; gap: 8px; align-items: center; background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 10px 14px; }
-    .key-row .key-value { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; color: #38bdf8; word-break: break-all; flex: 1; }
+    .key-row { display: flex; gap: 8px; align-items: center; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 14px; }
+    .key-row .key-value { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; color: #2563eb; word-break: break-all; flex: 1; }
   </style>
 </head>
 <body>
-  <nav id="topNav" class="hidden">
-    <h1>InsightFlow</h1>
-    <div class="user-badge">
+  <nav id="topNav">
+    <h1 style="cursor:pointer" onclick="location.href='/'">InsightFlow</h1>
+    <div class="flex" style="gap:8px">
+      <a href="/churn/" class="btn btn-blue" style="padding:6px 14px;font-size:12px;text-decoration:none">Churn Risk</a>
       <span id="navUser"></span>
-      <button class="btn btn-gray" style="padding:6px 12px;font-size:12px" onclick="logout()">Logout</button>
+      <button id="logoutBtn" class="btn btn-gray" style="padding:6px 12px;font-size:12px;display:none" onclick="logout()">Logout</button>
     </div>
   </nav>
 
@@ -196,9 +197,22 @@
             <div class="tabs mb-16" id="sectionTabs">
               <button class="tab active" data-section="dashboard">Dashboard</button>
               <button class="tab" data-section="sdk">SDK</button>
+              <a href="/churn/" class="tab" style="text-decoration:none;color:#f97316">Churn</a>
             </div>
 
             <div id="sectionDashboard">
+              <a href="/churn/" style="display:block;text-decoration:none;margin-bottom:16px">
+                <div class="card" style="background:linear-gradient(135deg,#eef2ff,#ffffff);border:1px solid #6366f1;cursor:pointer">
+                  <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div>
+                      <span style="font-size:0.75rem;color:#6366f1;text-transform:uppercase;letter-spacing:0.5px;font-weight:600">ML-powered</span>
+                      <h2 style="margin:4px 0 0 0;color:#1e293b;font-size:1.1rem">Churn Risk Dashboard</h2>
+                      <p style="margin:4px 0 0 0;font-size:0.85rem;color:#64748b">View churn predictions, risk analysis, and AI recommendations</p>
+                    </div>
+                    <span style="font-size:1.5rem;color:#6366f1">→</span>
+                  </div>
+                </div>
+              </a>
               <div id="realtimeBar" class="card" style="padding:16px 24px;margin-bottom:16px;display:flex;align-items:center;gap:8px">
                 <span style="width:10px;height:10px;border-radius:50%;background:#606088;display:inline-block"></span>
                 <span class="text-muted" style="font-size:12px">Loading live data...</span>
@@ -358,8 +372,8 @@
     function enterDashboard(data) {
       document.getElementById('authSection').className = 'hidden';
       document.getElementById('dashboardSection').className = '';
-      document.getElementById('topNav').className = '';
       document.getElementById('navUser').textContent = data.user.username;
+      document.getElementById('logoutBtn').style.display = '';
       loadProjects();
     }
 
@@ -368,7 +382,8 @@
       localStorage.removeItem('if_token');
       document.getElementById('dashboardSection').className = 'hidden';
       document.getElementById('authSection').className = '';
-      document.getElementById('topNav').className = 'hidden';
+      document.getElementById('navUser').textContent = '';
+      document.getElementById('logoutBtn').style.display = 'none';
       selectedProjectId = null;
     }
 
@@ -461,11 +476,11 @@
         el.innerHTML =
           '<span style="width:10px;height:10px;border-radius:50%;background:' + (online > 0 ? '#34D399' : '#606088') + ';display:inline-block;' +
           (online > 0 ? 'box-shadow:0 0 12px rgba(52,211,153,0.6);animation:pulse 2s infinite;' : '') + '"></span>' +
-          '<span style="font-size:18px;font-weight:700;color:#e2e8f0;margin:0 6px">' + online + '</span>' +
+          '<span style="font-size:18px;font-weight:700;color:#1e293b;margin:0 6px">' + online + '</span>' +
           '<span class="text-muted" style="font-size:12px">visitors online now</span>' +
           '<span style="margin-left:auto;display:flex;gap:16px;align-items:center">' +
-          '<div class="text-center"><div class="text-sm bold" style="color:#cbd5e1">' + (res.data.events_last_5min || 0) + '</div><div class="text-xs text-muted">Events (5min)</div></div>' +
-          '<div class="text-center"><div class="text-sm bold" style="color:#cbd5e1">' + (res.data.users_last_5min || 0) + '</div><div class="text-xs text-muted">Users (5min)</div></div>' +
+          '<div class="text-center"><div class="text-sm bold" style="color:#334155">' + (res.data.events_last_5min || 0) + '</div><div class="text-xs text-muted">Events (5min)</div></div>' +
+          '<div class="text-center"><div class="text-sm bold" style="color:#334155">' + (res.data.users_last_5min || 0) + '</div><div class="text-xs text-muted">Users (5min)</div></div>' +
           '<div class="text-xs text-muted">' + new Date().toLocaleTimeString() + '</div>' +
           '</span>';
       }
@@ -507,15 +522,15 @@
       res.data.forEach(function(d) {
         var icon = iconMap[d.type] || '📊';
         var dotColor = severityColors[d.severity] || '#22D3EE';
-        var typeBadge = d.type === 'anomaly' ? 'background:rgba(248,113,113,0.1);color:#F87171' :
-          d.type === 'suggestion' ? 'background:rgba(251,191,36,0.1);color:#FBBF24' :
-          'background:rgba(34,211,238,0.1);color:#22D3EE';
-        html += '<div style="display:flex;gap:14px;padding:16px 20px;border-bottom:1px solid #334155;align-items:flex-start">' +
+        var typeBadge = d.type === 'anomaly' ? 'background:rgba(220,38,38,0.1);color:#dc2626' :
+          d.type === 'suggestion' ? 'background:rgba(217,119,6,0.1);color:#d97706' :
+          'background:rgba(37,99,235,0.1);color:#2563eb';
+        html += '<div style="display:flex;gap:14px;padding:16px 20px;border-bottom:1px solid #e2e8f0;align-items:flex-start">' +
           '<span style="font-size:20px">' + icon + '</span>' +
           '<div style="flex:1;min-width:0">' +
           '<div style="display:flex;gap:8px;align-items:center;margin-bottom:2px">' +
           '<span style="width:8px;height:8px;border-radius:50%;background:' + dotColor + ';display:inline-block"></span>' +
-          '<span style="font-size:13px;font-weight:600;color:#e2e8f0">' + escapeHtml(d.title) + '</span>' +
+          '<span style="font-size:13px;font-weight:600;color:#1e293b">' + escapeHtml(d.title) + '</span>' +
           '<span style="font-size:10px;padding:1px 8px;border-radius:4px;' + typeBadge + ';font-weight:600;text-transform:uppercase">' + d.type.replace('_', ' ') + '</span>' +
           '</div>' +
           '<p style="font-size:13px;color:#64748b;line-height:1.5;margin:4px 0 0">' + escapeHtml(d.description) + '</p>' +

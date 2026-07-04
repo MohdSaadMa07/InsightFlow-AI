@@ -84,6 +84,7 @@ class ClickHouseConsumer:
                         'ip_address': data.get('ip_address', ''),
                         'user_agent': data.get('user_agent', ''),
                         'timestamp': data.get('timestamp', ''),
+                        'created_at': data.get('created_at', ''),
                     })
                     if len(self._batch) >= self._batch_size:
                         self._flush()

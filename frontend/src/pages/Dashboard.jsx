@@ -150,13 +150,13 @@ export default function Dashboard() {
           <div className="flex" style={{ gap: 12 }}>
             <span style={{
               width: 10, height: 10, borderRadius: '50%',
-              background: realtime?.online_users > 0 ? '#34D399' : '#606088',
+              background: realtime?.online_users > 0 ? '#10B981' : '#94a3b8',
               display: 'inline-block',
               boxShadow: realtime?.online_users > 0 ? '0 0 12px rgba(52, 211, 153, 0.6)' : 'none',
               animation: realtime?.online_users > 0 ? 'pulse 2s infinite' : 'none',
             }} />
             <div>
-              <span className="bold" style={{ fontSize: 18, color: '#EAEAFA' }}>
+              <span className="bold" style={{ fontSize: 18, color: '#1e293b' }}>
                 {realtime?.online_users ?? '-'}
               </span>
               <span className="text-muted" style={{ fontSize: 12, marginLeft: 6 }}>
@@ -166,11 +166,11 @@ export default function Dashboard() {
           </div>
           <div className="flex" style={{ gap: 16 }}>
             <div className="text-center">
-              <div className="text-sm bold" style={{ color: '#C0C0D8' }}>{realtime?.events_last_5min ?? '-'}</div>
+              <div className="text-sm bold" style={{ color: '#334155' }}>{realtime?.events_last_5min ?? '-'}</div>
               <div className="text-xs text-muted">Events (5min)</div>
             </div>
             <div className="text-center">
-              <div className="text-sm bold" style={{ color: '#C0C0D8' }}>{realtime?.users_last_5min ?? '-'}</div>
+              <div className="text-sm bold" style={{ color: '#334155' }}>{realtime?.users_last_5min ?? '-'}</div>
               <div className="text-xs text-muted">Users (5min)</div>
             </div>
             <div className="text-xs text-muted" style={{ alignSelf: 'center' }}>
@@ -224,14 +224,14 @@ export default function Dashboard() {
               {insights.map((insight, i) => (
                 <div key={i} style={{
                   display: 'flex', gap: 14, padding: '16px 20px',
-                  borderBottom: i < insights.length - 1 ? '1px solid #1E1E3A' : 'none',
+                  borderBottom: i < insights.length - 1 ? '1px solid #e2e8f0' : 'none',
                   alignItems: 'flex-start',
                 }}>
                   <InsightIcon type={insight.type} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div className="flex" style={{ gap: 8, marginBottom: 2 }}>
                       <SeverityDot severity={insight.severity} />
-                      <span className="bold" style={{ fontSize: 13, color: '#EAEAFA' }}>{insight.title}</span>
+                      <span className="bold" style={{ fontSize: 13, color: '#1e293b' }}>{insight.title}</span>
                       <span style={{
                         fontSize: 10, padding: '1px 8px', borderRadius: 4,
                         background: insight.type === 'anomaly' ? 'rgba(248, 113, 113, 0.1)' :
@@ -265,12 +265,12 @@ export default function Dashboard() {
               ))}
             </div>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-              <label style={{ fontSize: 11, color: '#606088', margin: 0, textTransform: 'none', letterSpacing: 0, whiteSpace: 'nowrap' }}>From</label>
+              <label style={{ fontSize: 11, color: '#64748b', margin: 0, textTransform: 'none', letterSpacing: 0, whiteSpace: 'nowrap' }}>From</label>
               <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
-                style={{ fontSize: 12, padding: '5px 8px', width: 140, borderRadius: 8, border: '1px solid #1E1E3A', background: '#0A0A18', color: '#EAEAFA' }} />
-              <label style={{ fontSize: 11, color: '#606088', margin: 0, textTransform: 'none', letterSpacing: 0, whiteSpace: 'nowrap' }}>To</label>
+                style={{ fontSize: 12, padding: '5px 8px', width: 140, borderRadius: 8, border: '1px solid #e2e8f0', background: '#ffffff', color: '#1e293b' }} />
+              <label style={{ fontSize: 11, color: '#64748b', margin: 0, textTransform: 'none', letterSpacing: 0, whiteSpace: 'nowrap' }}>To</label>
               <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
-                style={{ fontSize: 12, padding: '5px 8px', width: 140, borderRadius: 8, border: '1px solid #1E1E3A', background: '#0A0A18', color: '#EAEAFA' }} />
+                style={{ fontSize: 12, padding: '5px 8px', width: 140, borderRadius: 8, border: '1px solid #e2e8f0', background: '#ffffff', color: '#1e293b' }} />
               <button className="btn btn-sm btn-gray" onClick={applyCustom} disabled={!dateFrom || !dateTo}>Apply</button>
             </div>
           </div>
@@ -281,14 +281,14 @@ export default function Dashboard() {
           ) : (
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={chartData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1E1E3A" />
-                <XAxis dataKey="date" tick={{ fill: '#606088', fontSize: 11 }} axisLine={{ stroke: '#1E1E3A' }} />
-                <YAxis tick={{ fill: '#606088', fontSize: 11 }} axisLine={{ stroke: '#1E1E3A' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: '#e2e8f0' }} />
+                <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: '#e2e8f0' }} />
                 <Tooltip
-                  contentStyle={{ background: '#0D0D1A', border: '1px solid #1E1E3A', borderRadius: 8, fontSize: 12 }}
-                  labelStyle={{ color: '#C0C0D8' }}
+                  contentStyle={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 12 }}
+                  labelStyle={{ color: '#334155' }}
                 />
-                <Legend wrapperStyle={{ fontSize: 11, color: '#606088' }} />
+                <Legend wrapperStyle={{ fontSize: 11, color: '#64748b' }} />
                 {eventNames.map((name, i) => (
                   <Bar key={name} dataKey={name} fill={COLORS[i % COLORS.length]} radius={[3, 3, 0, 0]} maxBarSize={32} />
                 ))}
@@ -364,7 +364,7 @@ export default function Dashboard() {
                         </div>
                         <span className="text-sm bold">{c.users.toLocaleString()}</span>
                       </div>
-                      <div style={{ height: 4, background: '#1E1E3A', borderRadius: 2, overflow: 'hidden' }}>
+                      <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2, overflow: 'hidden' }}>
                         <div style={{ width: `${pct}%`, height: '100%', background: PIE_COLORS[i % PIE_COLORS.length], borderRadius: 2, transition: 'width 0.4s' }} />
                       </div>
                     </div>
@@ -403,9 +403,9 @@ export default function Dashboard() {
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{ background: '#0D0D1A', border: '1px solid #1E1E3A', borderRadius: 8, fontSize: 12 }}
+                    contentStyle={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 12 }}
                   />
-                  <Legend wrapperStyle={{ fontSize: 11, color: '#606088' }} />
+                  <Legend wrapperStyle={{ fontSize: 11, color: '#64748b' }} />
                 </PieChart>
               </ResponsiveContainer>
             )}
@@ -425,7 +425,7 @@ export default function Dashboard() {
                         <span className="text-sm">{b.name}</span>
                         <span className="text-sm bold">{b.users.toLocaleString()}</span>
                       </div>
-                      <div style={{ height: 4, background: '#1E1E3A', borderRadius: 2, overflow: 'hidden' }}>
+                      <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2, overflow: 'hidden' }}>
                         <div style={{ width: `${pct}%`, height: '100%', background: PIE_COLORS[i % PIE_COLORS.length], borderRadius: 2, transition: 'width 0.4s' }} />
                       </div>
                     </div>
@@ -486,8 +486,8 @@ export default function Dashboard() {
                   <div key={p} className="retention-tile">
                     <div className="retention-ring">
                       <svg width="80" height="80" viewBox="0 0 80 80">
-                        <circle cx="40" cy="40" r="34" fill="none" stroke="#1E1E3A" strokeWidth="6" />
-                        <circle cx="40" cy="40" r="34" fill="none" stroke="#34D399" strokeWidth="6"
+                        <circle cx="40" cy="40" r="34" fill="none" stroke="#e2e8f0" strokeWidth="6" />
+                        <circle cx="40" cy="40" r="34" fill="none" stroke="#10B981" strokeWidth="6"
                           strokeDasharray={`${(parseFloat(avg) / 100) * 213.6} 213.6`}
                           strokeLinecap="round" transform="rotate(-90 40 40)" />
                       </svg>

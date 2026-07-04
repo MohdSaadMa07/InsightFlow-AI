@@ -111,7 +111,7 @@ export default function ProjectHub() {
               
               <div className="hub-card hub-card-create" onClick={() => setShowNew(true)}>
                 <div className="hub-card-create-btn">+</div>
-                <div style={{ color: '#EAEAFA', fontWeight: 600, fontSize: 16 }}>Create New Project</div>
+                <div style={{ color: '#1e293b', fontWeight: 600, fontSize: 16 }}>Create New Project</div>
               </div>
             </div>
           </>
@@ -130,7 +130,7 @@ export default function ProjectHub() {
                       <polyline points="20 6 9 17 4 12"/>
                     </svg>
                   </div>
-                  <h2 style={{ fontSize: 20, color: '#fff', margin: 0 }}>Create New Project</h2>
+                  <h2 style={{ fontSize: 20, color: '#1e293b', margin: 0 }}>Create New Project</h2>
                   <p className="text-muted" style={{ marginTop: 6, fontSize: 13, lineHeight: 1.5 }}>
                     Project created. Use the API key below to connect your app to InsightFlow.
                   </p>
@@ -148,16 +148,16 @@ export default function ProjectHub() {
                     <pre>{`<script src="https://cdn.insightflow.ai/sdk.js" data-api-key="${newApiKey}"></script>`}</pre>
                     <button className="btn btn-gray btn-sm" onClick={() => navigator.clipboard.writeText(`<script src="https://cdn.insightflow.ai/sdk.js" data-api-key="${newApiKey}"></script>`)}>Copy</button>
                   </div>
-                  <p className="text-xs text-muted" style={{ marginTop: 8, lineHeight: 1.5 }}>
-                    Paste this tag in your HTML <code style={{ color: '#8888B0', background: '#05050A', padding: '1px 5px', borderRadius: 4, fontSize: 11 }}>&lt;head&gt;</code> to start tracking page views and events automatically.
-                  </p>
+              <p className="text-xs text-muted" style={{ marginTop: 8, lineHeight: 1.5 }}>
+                Paste this tag in your HTML <code style={{ color: '#475569', background: '#f1f5f9', padding: '1px 5px', borderRadius: 4, fontSize: 11 }}>&lt;head&gt;</code> to start tracking page views and events automatically.
+              </p>
                 </div>
 
                 <button className="btn btn-gray" style={{ width: '100%', marginTop: 24 }} onClick={closeModal}>Done</button>
               </div>
             ) : (
               <div>
-                <h2 style={{ fontSize: 20, color: '#fff', marginBottom: 20 }}>Create New Project</h2>
+                <h2 style={{ fontSize: 20, color: '#1e293b', marginBottom: 20 }}>Create New Project</h2>
                 <p className="text-muted" style={{ marginBottom: 20 }}>Give your project a name to generate an API key.</p>
                 <input
                   placeholder="Project Name (e.g. My Awesome App)"

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useState } from 'react'
+import ChurnDashboard from './pages/ChurnDashboard'
 import Dashboard from './pages/Dashboard'
 import Funnels from './pages/Funnels'
 import Mapping from './pages/Mapping'
@@ -26,7 +27,7 @@ export default function App() {
         <Route path="/project/:id" element={token ? <ProjectLayout /> : <Navigate to="/" />}>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="funnels" element={<Funnels />} />
-
+          <Route path="churn" element={<ChurnDashboard />} />
           <Route path="mapping" element={<Mapping />} />
           <Route path="settings" element={<Settings />} />
           

@@ -70,7 +70,7 @@ export default function Landing({ onAuth }) {
         <div className="modal-overlay">
           <div className="modal-content auth-modal">
             <button className="modal-close" onClick={() => { setAuthMode(null); setError(''); setForm({ username: '', email: '', password: '', organization_name: '' }) }}>×</button>
-            <h2 style={{ fontSize: 24, color: '#fff', marginBottom: 8, textAlign: 'center' }}>
+            <h2 style={{ fontSize: 24, color: '#1e293b', marginBottom: 8, textAlign: 'center' }}>
               {authMode === 'login' ? 'Welcome Back' : 'Create an Account'}
             </h2>
             <p className="text-muted" style={{ textAlign: 'center', marginBottom: 24 }}>
