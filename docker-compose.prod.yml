@@ -48,8 +48,9 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: insightflow-django
+    # We no longer expose 8000 directly to the internet; Caddy handles it
     ports:
-      - "8000:8000"  # Expose web API on port 8000
+      - "127.0.0.1:8000:8000"
     env_file:
       - .env.prod
     volumes:
@@ -60,6 +61,21 @@ services:
       redis:
         condition: service_healthy
     restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: insightflow-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - django
 
   celery_worker:
     build:
@@ -95,3 +111,5 @@ services:
 volumes:
   kafka_prod_data:
   redis_prod_data:
+  caddy_data:
+  caddy_config:

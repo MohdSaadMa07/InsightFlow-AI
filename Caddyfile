@@ -1,0 +1,3 @@
+98.93.48.72.nip.io {
+    reverse_proxy django:8000
+}
