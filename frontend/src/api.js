@@ -1,4 +1,4 @@
-const BASE = ''
+const BASE = import.meta.env.VITE_API_URL || ''
 
 function getHeaders() {
   const token = localStorage.getItem('token')
