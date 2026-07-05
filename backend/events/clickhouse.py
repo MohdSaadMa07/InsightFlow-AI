@@ -16,11 +16,12 @@ class ClickHouseService:
         username = cfg.get('USER', 'default')
         password = cfg.get('PASSWORD', '')
         database = cfg.get('DATABASE', 'insightflow')
+        secure = cfg.get('SECURE', False)
         try:
             from clickhouse_connect import get_client
             self._client = get_client(
                 host=host, port=port, username=username,
-                password=password, connect_timeout=5,
+                password=password, secure=secure, connect_timeout=10,
             )
             self._database = database
             self._table = cfg.get('TABLE', 'events')

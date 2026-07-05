@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+import dj_database_url
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -72,19 +73,23 @@ ANOMALY_SEVERITY_THRESHOLDS = {
     'critical': 2.0, # ratio >= 2.0
 }
 
-DATABASES = {
-    'default': {
-        'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.sqlite3'),
-        'NAME': os.getenv('DB_NAME', BASE_DIR / 'db.sqlite3'),
-        'USER': os.getenv('DB_USER', ''),
-        'PASSWORD': os.getenv('DB_PASSWORD', ''),
-        'HOST': os.getenv('DB_HOST', ''),
-        'PORT': os.getenv('DB_PORT', ''),
-        'OPTIONS': {
-            'sslmode': os.getenv('DB_SSLMODE', 'disable'),
+DATABASE_URL = os.getenv('DATABASE_URL')
+if DATABASE_URL:
+    DATABASES = {'default': dj_database_url.parse(DATABASE_URL, ssl_require=True)}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.sqlite3'),
+            'NAME': os.getenv('DB_NAME', BASE_DIR / 'db.sqlite3'),
+            'USER': os.getenv('DB_USER', ''),
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
+            'HOST': os.getenv('DB_HOST', ''),
+            'PORT': os.getenv('DB_PORT', ''),
+            'OPTIONS': {
+                'sslmode': os.getenv('DB_SSLMODE', 'disable'),
+            },
         },
-    },
-}
+    }
 
 DATABASE_ROUTERS = ['config.router.DatabaseRouter']
 
@@ -96,6 +101,7 @@ CLICKHOUSE = {
     'PASSWORD': os.getenv('CH_PASSWORD', ''),
     'DATABASE': os.getenv('CH_DATABASE', 'insightflow'),
     'TABLE': os.getenv('CH_TABLE', 'events'),
+    'SECURE': os.getenv('CH_SECURE', 'false').lower() == 'true',
 }
 
 # Kafka config
