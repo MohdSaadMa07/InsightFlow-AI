@@ -335,12 +335,16 @@ class ChurnRiskService:
                 risk = "medium"
             else:
                 risk = "low"
-            results.append({
+            prediction = {
                 "user_id": uid,
                 "probability": round(p, 4),
                 "risk_level": risk,
                 "total_events": self._cache_seqs[i]["total_events"],
                 "first_ts": first_ts_list[i].isoformat() if hasattr(first_ts_list[i], 'isoformat') else str(first_ts_list[i]),
+            }
+            prediction["suggestions"] = self._generate_user_suggestions(prediction, self._cache_seqs)
+            results.append({
+                **prediction,
             })
 
         # Sort by probability descending
@@ -643,6 +647,130 @@ class ChurnRiskService:
             "recommendations": recs,
             "top_churn_events": top_events,
         }
+
+    def _generate_user_suggestions(self, prediction, sequences=None):
+        """Generate per-user suggestions with reasons based on their risk profile and event patterns."""
+        suggestions = []
+        uid = str(prediction["user_id"])
+        prob = prediction["probability"]
+        risk = prediction["risk_level"]
+
+        # Find user's sequence
+        user_seq = None
+        if sequences:
+            for s in sequences:
+                if s["uid"] == uid:
+                    user_seq = s
+                    break
+
+        # Check last active days
+        last_active = prediction.get("last_active_days")
+        if last_active is None and user_seq:
+            last_ts = user_seq.get("last_ts")
+            if last_ts is not None:
+                if hasattr(last_ts, 'tzinfo') and last_ts.tzinfo is not None:
+                    last_ts = last_ts.replace(tzinfo=None)
+                last_active = (datetime.now() - last_ts).days
+
+        if last_active is not None:
+            if last_active >= 30:
+                suggestions.append({
+                    "type": "warning",
+                    "reason": "long_inactive",
+                    "message": f"User has not been active in {last_active} days — at high risk of permanent churn.",
+                    "action": "Send a reactivation campaign with a special incentive or personalized content.",
+                })
+            elif last_active >= 14:
+                suggestions.append({
+                    "type": "info",
+                    "reason": "moderate_inactivity",
+                    "message": f"User has been inactive for {last_active} days. Early re-engagement is recommended.",
+                    "action": "Send a gentle reminder or highlight new features since their last visit.",
+                })
+
+        # Analyze event patterns from the user's sequence
+        if user_seq:
+            vr = self.event_vocab_reverse
+            event_counts = Counter()
+            for f in user_seq["features"]:
+                name = vr.get(f["event"], f"tok_{f['event']}")
+                if name not in ("<SESS_START>", "<SESS_END>", "<PAD>", "<MASK>"):
+                    event_counts[name] += 1
+
+            total = sum(event_counts.values())
+            if total > 0:
+                # Frequent exit events
+                exit_count = event_counts.get("exit", 0)
+                if exit_count > 0 and exit_count / total > 0.15:
+                    suggestions.append({
+                        "type": "warning",
+                        "reason": "high_exit_rate",
+                        "message": f"Exit events make up {exit_count / total * 100:.0f}% of this user's activity, indicating frustration or confusion.",
+                        "action": "Review the pages where exits occur and consider adding help tooltips or simplifying navigation.",
+                    })
+
+                # Purchase then drop-off
+                if event_counts.get("purchase", 0) > 0 and event_counts.get("pageview", 0) == 0:
+                    suggestions.append({
+                        "type": "info",
+                        "reason": "post_purchase_drop",
+                        "message": "User made a purchase but stopped engaging. They may need post-purchase support or onboarding.",
+                        "action": "Send a post-purchase onboarding sequence or request feedback on their experience.",
+                    })
+
+                # Heavy search usage
+                search_count = event_counts.get("search", 0)
+                if search_count >= 3:
+                    suggestions.append({
+                        "type": "info",
+                        "reason": "heavy_search",
+                        "message": f"User searched {search_count} times, suggesting difficulty finding what they need.",
+                        "action": "Review search logs for this user to identify common queries and improve content discoverability.",
+                    })
+
+                # Cart abandonment
+                if event_counts.get("add_to_cart", 0) > 0 and event_counts.get("purchase", 0) == 0:
+                    suggestions.append({
+                        "type": "warning",
+                        "reason": "cart_abandonment",
+                        "message": "User added items to cart but never purchased — a classic cart abandonment pattern.",
+                        "action": "Send a cart recovery email with a reminder or limited-time discount.",
+                    })
+
+                # Signup but low engagement
+                if event_counts.get("signup", 0) > 0 and total <= 5:
+                    suggestions.append({
+                        "type": "info",
+                        "reason": "low_engagement_after_signup",
+                        "message": "User signed up but has very low engagement. They may not have found value in the product.",
+                        "action": "Send an onboarding drip campaign highlighting key features and use cases.",
+                    })
+
+        if risk == "high":
+            suggestions.append({
+                "type": "critical",
+                "reason": "high_churn_risk",
+                "message": "Immediate intervention needed — this user has a high probability of churning.",
+                "action": "Send a personalized re-engagement offer or trigger a support outreach.",
+            })
+
+        if risk == "medium":
+            suggestions.append({
+                "type": "warning",
+                "reason": "medium_churn_risk",
+                "message": "This user shows early signs of disengagement. Proactive outreach may prevent churn.",
+                "action": "Send a targeted nudge — a product tip, feature announcement, or check-in email.",
+            })
+
+        if not suggestions:
+            suggestions.append({
+                "type": "info",
+                "reason": "stable",
+                "message": "User behavior appears stable with no immediate risk flags.",
+                "action": "Continue monitoring and maintain engagement through regular touchpoints.",
+            })
+
+        return suggestions
 
 
 # Singleton instance

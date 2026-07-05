@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 import os
 import sys
+import pathlib
+
+# Ensure the parent of the 'backend/' directory is on sys.path so that
+# 'backend' is importable as a package (needed for any backend.* imports).
+# The 'backend/' directory itself is already on sys.path when running from it.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 
 def main():

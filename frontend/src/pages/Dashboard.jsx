@@ -59,6 +59,7 @@ export default function Dashboard() {
   const [devices, setDevices] = useState(null)
   const [sessions, setSessions] = useState(null)
   const [insights, setInsights] = useState([])
+  const [anomalyHealth, setAnomalyHealth] = useState(null)
   const [timeAgo, setTimeAgo] = useState('')
 
   const pollRef = useRef(null)
@@ -86,6 +87,7 @@ export default function Dashboard() {
     api.dashboard.devices(selected).then(setDevices).catch(() => {})
     api.dashboard.sessions(selected).then(setSessions).catch(() => {})
     api.dashboard.insights(selected).then(setInsights).catch(() => {})
+    api.dashboard.anomalies(selected, 14).then(setAnomalyHealth).catch(() => setAnomalyHealth(null))
 
     loadRealtime()
     pollRef.current = setInterval(loadRealtime, POLL_INTERVAL)
@@ -156,7 +158,7 @@ export default function Dashboard() {
               animation: realtime?.online_users > 0 ? 'pulse 2s infinite' : 'none',
             }} />
             <div>
-              <span className="bold" style={{ fontSize: 18, color: '#1e293b' }}>
+              <span className="bold" style={{ fontSize: 18, color: '#f8fbff' }}>
                 {realtime?.online_users ?? '-'}
               </span>
               <span className="text-muted" style={{ fontSize: 12, marginLeft: 6 }}>
@@ -166,11 +168,11 @@ export default function Dashboard() {
           </div>
           <div className="flex" style={{ gap: 16 }}>
             <div className="text-center">
-              <div className="text-sm bold" style={{ color: '#334155' }}>{realtime?.events_last_5min ?? '-'}</div>
+              <div className="text-sm bold" style={{ color: '#e2e8f0' }}>{realtime?.events_last_5min ?? '-'}</div>
               <div className="text-xs text-muted">Events (5min)</div>
             </div>
             <div className="text-center">
-              <div className="text-sm bold" style={{ color: '#334155' }}>{realtime?.users_last_5min ?? '-'}</div>
+              <div className="text-sm bold" style={{ color: '#e2e8f0' }}>{realtime?.users_last_5min ?? '-'}</div>
               <div className="text-xs text-muted">Users (5min)</div>
             </div>
             <div className="text-xs text-muted" style={{ alignSelf: 'center' }}>
@@ -210,6 +212,79 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* System Health Panel */}
+      <div className="dash-section">
+        <div className="dash-section-header">
+          <div>
+            <h3>System Health</h3>
+            <p className="dash-section-desc">Behavioral anomaly signals from recent event windows</p>
+          </div>
+        </div>
+        <div className="card" style={{ padding: 20 }}>
+          {anomalyHealth ? (
+            <>
+              <div className="stat-row" style={{ marginBottom: 16 }}>
+                <div className="stat-card stat-primary">
+                  <div className="stat-value">{anomalyHealth.anomaly_count ?? 0}</div>
+                  <div className="stat-label">Anomalies</div>
+                </div>
+                <div className="stat-card stat-info">
+                  <div className="stat-value">{((anomalyHealth.anomaly_rate ?? 0) * 100).toFixed(1)}%</div>
+                  <div className="stat-label">Anomaly Rate</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-value">{anomalyHealth.total_scored ?? 0}</div>
+                  <div className="stat-label">Windows Scored</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-value">{anomalyHealth.threshold?.toFixed?.(3) ?? '-'}</div>
+                  <div className="stat-label">Threshold</div>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1.25fr 0.95fr', gap: 16 }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                    Top Affected Features
+                  </div>
+                  <div style={{ display: 'grid', gap: 10 }}>
+                    {(anomalyHealth.top_features || []).length > 0 ? anomalyHealth.top_features.map(feature => (
+                      <div key={feature.feature} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '10px 12px', borderRadius: 12, background: 'rgba(15,23,42,0.45)', border: '1px solid rgba(148,163,184,0.12)' }}>
+                        <div>
+                          <div className="bold" style={{ fontSize: 13, color: '#f8fbff' }}>{feature.label}</div>
+                          <div className="text-xs text-muted">{feature.feature}</div>
+                        </div>
+                        <div className="bold" style={{ color: '#67e8f9', fontSize: 13 }}>{feature.score?.toFixed?.(2) ?? feature.score}</div>
+                      </div>
+                    )) : (
+                      <div className="text-sm text-muted">No feature signal available yet.</div>
+                    )}
+                  </div>
+                </div>
+
+              </div>
+
+              {(anomalyHealth.daily_anomalies || []).length > 0 && (
+                <div style={{ marginTop: 16 }}>
+                  <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                    Anomaly Trend
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {anomalyHealth.daily_anomalies.map(point => (
+                      <span key={point.date} className="badge" style={{ background: 'rgba(99,102,241,0.12)', color: '#a5b4fc' }}>
+                        {point.date}: {point.count}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-sm text-muted">No anomaly summary available yet.</div>
+          )}
+        </div>
+      </div>
+
       {/* Insights Panel */}
       {insights.length > 0 && (
         <div className="dash-section">
@@ -231,7 +306,7 @@ export default function Dashboard() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div className="flex" style={{ gap: 8, marginBottom: 2 }}>
                       <SeverityDot severity={insight.severity} />
-                      <span className="bold" style={{ fontSize: 13, color: '#1e293b' }}>{insight.title}</span>
+                      <span className="bold" style={{ fontSize: 13, color: '#f8fbff' }}>{insight.title}</span>
                       <span style={{
                         fontSize: 10, padding: '1px 8px', borderRadius: 4,
                         background: insight.type === 'anomaly' ? 'rgba(248, 113, 113, 0.1)' :
@@ -265,12 +340,12 @@ export default function Dashboard() {
               ))}
             </div>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-              <label style={{ fontSize: 11, color: '#64748b', margin: 0, textTransform: 'none', letterSpacing: 0, whiteSpace: 'nowrap' }}>From</label>
+              <label style={{ fontSize: 11, color: 'var(--muted)', margin: 0, textTransform: 'none', letterSpacing: 0, whiteSpace: 'nowrap' }}>From</label>
               <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
-                style={{ fontSize: 12, padding: '5px 8px', width: 140, borderRadius: 8, border: '1px solid #e2e8f0', background: '#ffffff', color: '#1e293b' }} />
-              <label style={{ fontSize: 11, color: '#64748b', margin: 0, textTransform: 'none', letterSpacing: 0, whiteSpace: 'nowrap' }}>To</label>
+                style={{ fontSize: 12, padding: '5px 8px', width: 140, borderRadius: 8, border: '1px solid rgba(148,163,184,0.16)', background: 'rgba(15,23,42,0.72)', color: '#e2e8f0' }} />
+              <label style={{ fontSize: 11, color: 'var(--muted)', margin: 0, textTransform: 'none', letterSpacing: 0, whiteSpace: 'nowrap' }}>To</label>
               <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
-                style={{ fontSize: 12, padding: '5px 8px', width: 140, borderRadius: 8, border: '1px solid #e2e8f0', background: '#ffffff', color: '#1e293b' }} />
+                style={{ fontSize: 12, padding: '5px 8px', width: 140, borderRadius: 8, border: '1px solid rgba(148,163,184,0.16)', background: 'rgba(15,23,42,0.72)', color: '#e2e8f0' }} />
               <button className="btn btn-sm btn-gray" onClick={applyCustom} disabled={!dateFrom || !dateTo}>Apply</button>
             </div>
           </div>
@@ -281,14 +356,14 @@ export default function Dashboard() {
           ) : (
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={chartData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: '#e2e8f0' }} />
-                <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: '#e2e8f0' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.14)" />
+                <XAxis dataKey="date" tick={{ fill: '#8ba0bf', fontSize: 11 }} axisLine={{ stroke: 'rgba(148,163,184,0.16)' }} />
+                <YAxis tick={{ fill: '#8ba0bf', fontSize: 11 }} axisLine={{ stroke: 'rgba(148,163,184,0.16)' }} />
                 <Tooltip
-                  contentStyle={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 12 }}
-                  labelStyle={{ color: '#334155' }}
+                  contentStyle={{ background: 'rgba(10,18,33,0.96)', border: '1px solid rgba(148,163,184,0.16)', borderRadius: 8, fontSize: 12, color: '#e2e8f0' }}
+                  labelStyle={{ color: '#e2e8f0' }}
                 />
-                <Legend wrapperStyle={{ fontSize: 11, color: '#64748b' }} />
+                <Legend wrapperStyle={{ fontSize: 11, color: '#8ba0bf' }} />
                 {eventNames.map((name, i) => (
                   <Bar key={name} dataKey={name} fill={COLORS[i % COLORS.length]} radius={[3, 3, 0, 0]} maxBarSize={32} />
                 ))}

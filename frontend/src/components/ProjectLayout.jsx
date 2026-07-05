@@ -39,12 +39,18 @@ export default function ProjectLayout() {
 
   if (loading) return null
 
-  const navLinks = [
+  const productLinks = [
     { name: 'Dashboard', path: 'dashboard' },
-    { name: 'Funnels', path: 'funnels' },
-    { name: 'Semantic Mapping', path: 'mapping' },
+    { name: 'Revenue', path: 'revenue' },
     { name: 'Churn Risk', path: 'churn' },
-    { name: 'Settings', path: 'settings' },
+
+    { name: 'Semantic Mapping', path: 'mapping' },
+    { name: 'Funnels', path: 'funnels' },
+  ]
+
+  const systemHealthLinks = [
+    { name: 'System Health',   path: 'system/monitor' },
+    { name: 'Anomaly Monitor', path: 'anomaly-monitor', hint: 'Project-level' },
   ]
 
   return (
@@ -78,7 +84,8 @@ export default function ProjectLayout() {
           </div>
 
           <div className="card" style={{ padding: '8px 12px' }}>
-            {navLinks.map(link => {
+            <div className="nav-section-label">Product Analytics</div>
+            {productLinks.map(link => {
               const fullPath = `/project/${id}/${link.path}`
               const isActive = location.pathname.startsWith(fullPath)
               return (
@@ -88,6 +95,27 @@ export default function ProjectLayout() {
                 </Link>
               )
             })}
+
+            <div className="nav-section-label" style={{ marginTop: 12 }}>System Health</div>
+            {systemHealthLinks.map(link => {
+              const fullPath = `/project/${id}/${link.path}`
+              const isActive = location.pathname.startsWith(fullPath)
+              return (
+                <Link key={link.name} to={fullPath} className={`nav-link${isActive ? ' active' : ''}`}>
+                  <span className="nav-link-dot" style={{ opacity: isActive ? 1 : 0 }}></span>
+                  <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
+                    <span>{link.name}</span>
+                    {link.hint && <span className="nav-link-hint">{link.hint}</span>}
+                  </span>
+                </Link>
+              )
+            })}
+
+            <div className="nav-section-label" style={{ marginTop: 12 }}>Account</div>
+            <Link to={`/project/${id}/settings`} className={`nav-link${location.pathname.startsWith(`/project/${id}/settings`) ? ' active' : ''}`}>
+              <span className="nav-link-dot" style={{ opacity: location.pathname.startsWith(`/project/${id}/settings`) ? 1 : 0 }}></span>
+              Settings
+            </Link>
           </div>
         </aside>
 

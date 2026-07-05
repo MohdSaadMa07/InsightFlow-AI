@@ -63,6 +63,11 @@ export const api = {
     devices: (projectId) => api.get(`/api/v1/dashboard/devices/?project_id=${projectId}`),
     sessions: (projectId) => api.get(`/api/v1/dashboard/sessions/?project_id=${projectId}`),
     insights: (projectId) => api.get(`/api/v1/dashboard/insights/?project_id=${projectId}`),
+    anomalies: (projectId, days = 14, userId) => {
+      let url = `/api/v1/dashboard/anomalies/?project_id=${projectId}&days=${days}`
+      if (userId) url += `&user_id=${userId}`
+      return api.get(url)
+    },
   },
 
   mapping: {

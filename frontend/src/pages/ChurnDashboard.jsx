@@ -20,7 +20,7 @@ export default function ChurnDashboard() {
   useEffect(() => {
     if (!selected) return
     setLoading(true)
-    fetch(`/churn/data/?project_id=${selected}`)
+    fetch(`/api/v1/dashboard/churn/data/?project_id=${selected}`)
       .then(r => { if (!r.ok) throw new Error('Failed to load'); return r.json() })
       .then(d => { setData(d); setLoading(false) })
       .catch(e => { setError(e.message); setLoading(false) })
@@ -42,6 +42,55 @@ export default function ChurnDashboard() {
     p.user_id.toLowerCase().includes(search.toLowerCase())
   )
   const displayPredictions = showAll ? filteredPredictions : filteredPredictions.slice(0, PAGE_SIZE)
+
+  function getUserSuggestion(prediction) {
+    const suggestions = prediction.suggestions || []
+    const specific = suggestions.find(s => !['high_churn_risk', 'medium_churn_risk', 'stable'].includes(s.reason))
+    if (specific) return specific
+    if (suggestions.length > 0) return suggestions[0]
+
+    if (prediction.risk_level === 'high') {
+      return {
+        action: 'Trigger a personal outreach flow',
+        message: 'High churn risk means the product team should intervene now with a tailored re-engagement touchpoint.',
+        reason: 'high_churn_risk',
+      }
+    }
+
+    if (prediction.risk_level === 'medium') {
+      return {
+        action: 'Send a targeted product nudge',
+        message: 'Medium-risk users are still engaged enough for a timely in-app prompt or lifecycle email to work.',
+        reason: 'medium_churn_risk',
+      }
+    }
+
+    return {
+      action: 'Keep the journey steady',
+      message: 'Low-risk users are active enough that the best move is to maintain the current experience and watch for drift.',
+      reason: 'stable',
+    }
+  }
+
+  function formatWhy(prediction, suggestion) {
+    const reason = suggestion?.reason || 'stable'
+    const lastActive = prediction.last_active_days
+
+    const reasons = {
+      long_inactive: lastActive ? `Inactive for ${lastActive}+ days, which is strongly linked to churn.` : 'Inactive long enough to signal drop-off risk.',
+      moderate_inactivity: lastActive ? `Inactive for ${lastActive} days, so a light re-engagement nudge may work.` : 'Recently inactive, so a small reminder is likely the right next step.',
+      high_exit_rate: 'Exit-heavy behavior suggests the user is hitting friction or confusion in the product.',
+      post_purchase_drop: 'The user bought once and then stopped returning, which usually means post-purchase support is missing.',
+      heavy_search: 'Frequent searching suggests they are not finding the right content or feature quickly enough.',
+      cart_abandonment: 'They added items but did not finish the purchase, so checkout recovery is the best lever.',
+      low_engagement_after_signup: 'They signed up but showed very little follow-through, which points to weak onboarding value.',
+      high_churn_risk: 'Overall churn probability is in the high-risk band, so proactive outreach is justified.',
+      medium_churn_risk: 'Overall churn probability is elevated, but there is still time for a lighter intervention.',
+      stable: 'No strong churn signal is present, so the product team should mainly monitor for drift.',
+    }
+
+    return reasons[reason] || suggestion?.message || 'This recommendation is based on the strongest churn signal currently detected.'
+  }
 
   return (
     <div className="dash">
@@ -234,39 +283,61 @@ export default function ChurnDashboard() {
                   <th>Risk Level</th>
                   <th>Probability</th>
                   <th>Events</th>
-                  <th>Actions</th>
+                  <th>Suggested Action</th>
+                  <th>Why this suggestion</th>
+                  <th>Details</th>
                 </tr>
               </thead>
               <tbody>
-                {displayPredictions.map((p, i) => (
-                  <tr key={i}>
-                    <td><span className="mono">{p.user_id.substring(0, 20)}{p.user_id.length > 20 ? '...' : ''}</span></td>
-                    <td><span className={`badge risk-${p.risk_level}`} style={{
-                      background: p.risk_level === 'high' ? 'rgba(220,38,38,0.1)' : p.risk_level === 'medium' ? 'rgba(217,119,6,0.1)' : 'rgba(22,163,74,0.1)',
-                      color: RISK_COLORS[p.risk_level]
-                    }}>{p.risk_level}</span></td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div style={{ width: 80, height: 6, background: '#e2e8f0', borderRadius: 3, overflow: 'hidden' }}>
-                          <div style={{ width: `${(p.probability * 100).toFixed(0)}%`, height: '100%', background: RISK_COLORS[p.risk_level], borderRadius: 3 }} />
+                {displayPredictions.map((p, i) => {
+                  const suggestion = getUserSuggestion(p)
+                  const why = formatWhy(p, suggestion)
+
+                  return (
+                    <tr key={i}>
+                      <td><span className="mono">{p.user_id.substring(0, 20)}{p.user_id.length > 20 ? '...' : ''}</span></td>
+                      <td><span className={`badge risk-${p.risk_level}`} style={{
+                        background: p.risk_level === 'high' ? 'rgba(220,38,38,0.1)' : p.risk_level === 'medium' ? 'rgba(217,119,6,0.1)' : 'rgba(22,163,74,0.1)',
+                        color: RISK_COLORS[p.risk_level]
+                      }}>{p.risk_level}</span></td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={{ width: 80, height: 6, background: '#e2e8f0', borderRadius: 3, overflow: 'hidden' }}>
+                            <div style={{ width: `${(p.probability * 100).toFixed(0)}%`, height: '100%', background: RISK_COLORS[p.risk_level], borderRadius: 3 }} />
+                          </div>
+                          <span className="text-sm">{(p.probability * 100).toFixed(1)}%</span>
                         </div>
-                        <span className="text-sm">{(p.probability * 100).toFixed(1)}%</span>
-                      </div>
-                    </td>
-                    <td>{p.total_events}</td>
-                    <td>
-                      <button className="btn btn-sm btn-primary" onClick={() => {
-                        setModalUser(p.user_id)
-                        setModalDetail(null)
-                        setModalLoading(true)
-                        fetch(`/churn/explain/${encodeURIComponent(p.user_id)}/?project_id=${selected}`)
-                          .then(r => r.ok ? r.json() : null)
-                          .then(d => { if (d?.user_id) setModalDetail(d); setModalLoading(false) })
-                          .catch(() => setModalLoading(false))
-                      }}>Explain</button>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td>{p.total_events}</td>
+                      <td>
+                        <div className="risk-action-block">
+                          <span className={`badge risk-action-pill risk-action-${p.risk_level}`}>
+                            {suggestion.action || 'Review'}
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        <span className="risk-reason">{why}</span>
+                        {suggestion.reason && (
+                          <div className="text-xs text-muted" style={{ marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                            Reason: {suggestion.reason.replace(/_/g, ' ')}
+                          </div>
+                        )}
+                      </td>
+                      <td>
+                        <button className="btn btn-sm btn-primary" onClick={() => {
+                          setModalUser(p.user_id)
+                          setModalDetail(null)
+                          setModalLoading(true)
+                          fetch(`/api/v1/dashboard/churn/explain/${encodeURIComponent(p.user_id)}/?project_id=${selected}`)
+                            .then(r => r.ok ? r.json() : null)
+                            .then(d => { if (d?.user_id) setModalDetail(d); setModalLoading(false) })
+                            .catch(() => setModalLoading(false))
+                        }}>View details</button>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>

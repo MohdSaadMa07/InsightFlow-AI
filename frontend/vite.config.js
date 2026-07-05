@@ -8,6 +8,7 @@ export default defineConfig({
     proxy: {
       '/api': 'http://localhost:8000',
       '/churn': 'http://localhost:8000',
+      '/revenue': 'http://localhost:8000',
       '/static': 'http://localhost:8000',
     },
   },

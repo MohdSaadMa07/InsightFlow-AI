@@ -72,6 +72,27 @@ class RetentionCurve(models.Model):
         ordering = ['cohort_date']
 
 
+class DailyRevenue(models.Model):
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name='daily_revenues'
+    )
+    date = models.DateField(db_index=True)
+    total_revenue = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    mrr = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    transaction_count = models.IntegerField(default=0)
+    subscription_count = models.IntegerField(default=0)
+    refund_count = models.IntegerField(default=0)
+    dau = models.IntegerField(default=0)
+    session_count = models.IntegerField(default=0)
+    avg_churn_risk = models.FloatField(default=0.0)
+    high_risk_user_count = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['project', 'date']
+        ordering = ['-date']
+
+
 class AnalyticsResult(models.Model):
     METRIC_CHOICES = [
         ('dau', 'Daily Active Users'),

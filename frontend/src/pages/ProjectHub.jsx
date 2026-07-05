@@ -67,7 +67,7 @@ export default function ProjectHub() {
       <div className="hub-container" style={{ padding: '60px 40px', maxWidth: 1000, margin: '0 auto', width: '100%' }}>
         
         {projects.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '100px 20px' }}>
+            <div style={{ textAlign: 'center', padding: '100px 20px' }}>
             <div className="glow-orb" style={{ top: '100px', opacity: 0.5 }}></div>
             <h2 className="hero-title" style={{ fontSize: 48, marginBottom: 16 }}>Welcome to InsightFlow</h2>
             <p className="hero-subtitle" style={{ margin: '0 auto 40px' }}>
@@ -130,7 +130,7 @@ export default function ProjectHub() {
                       <polyline points="20 6 9 17 4 12"/>
                     </svg>
                   </div>
-                  <h2 style={{ fontSize: 20, color: '#1e293b', margin: 0 }}>Create New Project</h2>
+                  <h2 style={{ fontSize: 20, color: '#f8fbff', margin: 0 }}>Create New Project</h2>
                   <p className="text-muted" style={{ marginTop: 6, fontSize: 13, lineHeight: 1.5 }}>
                     Project created. Use the API key below to connect your app to InsightFlow.
                   </p>
@@ -149,7 +149,7 @@ export default function ProjectHub() {
                     <button className="btn btn-gray btn-sm" onClick={() => navigator.clipboard.writeText(`<script src="https://cdn.insightflow.ai/sdk.js" data-api-key="${newApiKey}"></script>`)}>Copy</button>
                   </div>
               <p className="text-xs text-muted" style={{ marginTop: 8, lineHeight: 1.5 }}>
-                Paste this tag in your HTML <code style={{ color: '#475569', background: '#f1f5f9', padding: '1px 5px', borderRadius: 4, fontSize: 11 }}>&lt;head&gt;</code> to start tracking page views and events automatically.
+                Paste this tag in your HTML <code style={{ color: '#e2e8f0', background: 'rgba(15, 23, 42, 0.8)', padding: '1px 5px', borderRadius: 4, fontSize: 11 }}>&lt;head&gt;</code> to start tracking page views and events automatically.
               </p>
                 </div>
 
@@ -157,7 +157,7 @@ export default function ProjectHub() {
               </div>
             ) : (
               <div>
-                <h2 style={{ fontSize: 20, color: '#1e293b', marginBottom: 20 }}>Create New Project</h2>
+                <h2 style={{ fontSize: 20, color: '#f8fbff', marginBottom: 20 }}>Create New Project</h2>
                 <p className="text-muted" style={{ marginBottom: 20 }}>Give your project a name to generate an API key.</p>
                 <input
                   placeholder="Project Name (e.g. My Awesome App)"

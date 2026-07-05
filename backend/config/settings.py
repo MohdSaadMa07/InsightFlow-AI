@@ -64,6 +64,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+# Anomaly severity thresholds (ratio = reconstruction_error / threshold)
+ANOMALY_SEVERITY_THRESHOLDS = {
+    'low': 1.0,      # ratio >= 1.0
+    'medium': 1.2,   # ratio >= 1.2
+    'high': 1.5,     # ratio >= 1.5
+    'critical': 2.0, # ratio >= 2.0
+}
+
 DATABASES = {
     'default': {
         'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.sqlite3'),
@@ -72,6 +80,9 @@ DATABASES = {
         'PASSWORD': os.getenv('DB_PASSWORD', ''),
         'HOST': os.getenv('DB_HOST', ''),
         'PORT': os.getenv('DB_PORT', ''),
+        'OPTIONS': {
+            'sslmode': os.getenv('DB_SSLMODE', 'disable'),
+        },
     },
 }
 
@@ -157,5 +168,15 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'ml.tasks.nightly_pipeline',
         'schedule': crontab(hour=3, minute=0),  # 3 AM daily
         'args': (14, 500, False),
+    },
+    'nightly-revenue-aggregation': {
+        'task': 'ml.tasks.nightly_revenue_aggregation',
+        'schedule': crontab(hour=3, minute=30),  # 3:30 AM
+        'args': (14,),
+    },
+    'nightly-revenue-forecast': {
+        'task': 'ml.tasks.nightly_revenue_forecast',
+        'schedule': crontab(hour=4, minute=0),  # 4 AM
+        'args': (14, 30),
     },
 }

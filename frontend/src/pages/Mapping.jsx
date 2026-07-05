@@ -104,7 +104,7 @@ export default function Mapping() {
     <div>
       <div className="flex-between" style={{ marginBottom: 20 }}>
         <div>
-          <h2 style={{ fontSize: 22, fontWeight: 700, color: '#1e293b', margin: 0, letterSpacing: '-0.5px' }}>Semantic Mapping</h2>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: '#f8fbff', margin: 0, letterSpacing: '-0.5px' }}>Semantic Mapping</h2>
           <p className="text-muted" style={{ marginTop: 2, fontSize: 12 }}>
             {mappings.length} events mapped &middot; <span style={{ color: '#22D3EE' }}>{funnelCount} in funnel</span> &middot; <span style={{ color: '#F59E0B' }}>{otherCount} other</span>
           </p>
@@ -136,7 +136,7 @@ export default function Mapping() {
 
         {detected.length > 0 && (
           <div style={{ padding: '12px 20px', background: 'rgba(34,211,238,0.02)', borderBottom: '1px solid #e2e8f0' }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#1e293b', marginBottom: 8 }}>New events detected ({detected.length})</div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#f8fbff', marginBottom: 8 }}>New events detected ({detected.length})</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {detected.map((d, i) => {
                 const pct = (d.confidence || 0) * 100
@@ -186,8 +186,8 @@ export default function Mapping() {
                   <div style={{
                     padding: '5px 20px', fontSize: 10, fontWeight: 600, color: group.color,
                     textTransform: 'uppercase', letterSpacing: '0.06em',
-                    background: '#f8fafc',
-                    borderBottom: '1px solid #e2e8f0',
+                    background: 'rgba(15, 23, 42, 0.72)',
+                    borderBottom: '1px solid rgba(148,163,184,0.14)',
                     display: 'flex', alignItems: 'center', gap: 6,
                   }}>
                     <span style={{ width: 5, height: 5, borderRadius: '50%', background: group.color, display: 'inline-block' }}></span>
@@ -222,10 +222,10 @@ function Row({ m, cat, funnel, dirty, saving, onCategory, onToggle, onSave }) {
     <div style={{
       display: 'flex', alignItems: 'center', gap: 10,
       padding: '6px 20px', fontSize: 12,
-      background: changed ? 'rgba(34,211,238,0.02)' : 'transparent',
-      borderBottom: '1px solid #e2e8f0',
+      background: changed ? 'rgba(34,211,238,0.03)' : 'transparent',
+      borderBottom: '1px solid rgba(148,163,184,0.12)',
     }}>
-      <span style={{ fontFamily: "'SF Mono','Fira Code',monospace", color: '#334155', flex: '1 1 140px', minWidth: 0 }}>
+      <span style={{ fontFamily: "'SF Mono','Fira Code',monospace", color: '#e2e8f0', flex: '1 1 140px', minWidth: 0 }}>
         {m.event_name}
         {m.is_auto_detected && (
           <span style={{ marginLeft: 4, fontSize: 9, color: '#34D399', fontWeight: 600, background: 'rgba(52,211,153,0.08)', padding: '1px 5px', borderRadius: 3 }}>
@@ -238,18 +238,19 @@ function Row({ m, cat, funnel, dirty, saving, onCategory, onToggle, onSave }) {
         onChange={e => onCategory(m.id, e.target.value)}
         style={{
           fontSize: 11, padding: '2px 6px', width: 120, borderRadius: 5, flexShrink: 0,
-          borderColor: changed ? 'rgba(34,211,238,0.3)' : undefined,
-          background: changed ? 'rgba(34,211,238,0.03)' : undefined,
+          borderColor: changed ? 'rgba(34,211,238,0.3)' : 'rgba(148,163,184,0.16)',
+          background: changed ? 'rgba(34,211,238,0.06)' : 'rgba(15,23,42,0.72)',
+          color: '#e2e8f0',
         }}
       >
         {FULL_CATEGORIES.map(g => <option key={g.key} value={g.key}>{g.label}</option>)}
       </select>
-      <label style={{ display: 'flex', alignItems: 'center', gap: 3, cursor: 'pointer', flexShrink: 0, fontSize: 10, color: f ? '#22D3EE' : '#94a3b8', fontWeight: 600, userSelect: 'none' }}>
+      <label style={{ display: 'flex', alignItems: 'center', gap: 3, cursor: 'pointer', flexShrink: 0, fontSize: 10, color: f ? '#67e8f9' : '#94a3b8', fontWeight: 600, userSelect: 'none' }}>
         <input type="checkbox" checked={f} onChange={() => onToggle(m.id)} style={{ accentColor: '#22D3EE', width: 12, height: 12 }} />
         Funnel
       </label>
       {saving === m.id ? (
-        <span style={{ fontSize: 10, color: '#64748b', flexShrink: 0, width: 44, textAlign: 'center' }}>Saving…</span>
+        <span style={{ fontSize: 10, color: 'var(--muted)', flexShrink: 0, width: 44, textAlign: 'center' }}>Saving…</span>
       ) : changed ? (
         <button className="btn btn-green btn-sm" onClick={() => onSave(m.id)} style={{ fontSize: 10, padding: '2px 8px', flexShrink: 0 }}>Save</button>
       ) : (

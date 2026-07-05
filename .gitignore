@@ -3,8 +3,13 @@ backend/.env
 __pycache__/
 node_modules/
 dist/
+*.sqlite3
+*.tgz
 
-# ML runtime caches (not training artifacts)
+# ML training artifacts
+lightning_logs/
+*.pt
+*.ckpt
 backend/ml/models/artifacts/churn_cache.json
 backend/ml/models/artifacts/shap_cache.json
 backend/ml/models/artifacts/*.pkl

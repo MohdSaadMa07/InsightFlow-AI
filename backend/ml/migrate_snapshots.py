@@ -31,6 +31,7 @@ def migrate():
             risk_level       String,
             total_events     UInt32,
             shap_explanation String,
+            suggestions      String,
             confidence       String,
             confidence_score Float32,
             cohort_size      UInt32,

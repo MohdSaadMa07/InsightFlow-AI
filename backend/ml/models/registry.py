@@ -4,14 +4,15 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
 
-from ..config import settings
+import os
+_MODELS_DIR = Path(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'models', 'artifacts'))
 
 
 class ModelRegistry:
     """Lightweight model registry — save, load, version, and list models."""
 
     def __init__(self, registry_dir: Optional[Path] = None):
-        self.registry_dir = registry_dir or settings.models_dir
+        self.registry_dir = registry_dir or _MODELS_DIR
         self.registry_dir.mkdir(parents=True, exist_ok=True)
         self._index_path = self.registry_dir / "index.json"
         self._index = self._load_index()

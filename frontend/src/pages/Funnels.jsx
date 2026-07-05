@@ -82,8 +82,9 @@ export default function Funnels() {
   async function refreshFunnel() {
     if (!selected) return
     setRefreshing(true)
+    // Run compute if possible, but don't block data fetch on errors
+    api.mapping.computeFunnel(selected, days).catch(() => {})
     try {
-      await api.mapping.computeFunnel(selected, days)
       if (useCustom && dateFrom && dateTo) {
         const newRows = await api.dashboard.funnels(selected, days, dateFrom, dateTo)
         setRows(newRows || [])
@@ -114,7 +115,7 @@ export default function Funnels() {
     <div>
       <div className="flex-between" style={{ marginBottom: 24 }}>
         <div>
-          <h2 style={{ fontSize: 22, fontWeight: 700, color: '#1e293b', margin: 0, letterSpacing: '-0.5px' }}>Conversion Funnel</h2>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: '#f8fbff', margin: 0, letterSpacing: '-0.5px' }}>Conversion Funnel</h2>
           <p className="text-muted" style={{ marginTop: 4, fontSize: 13 }}>
             Track how users progress through each stage of your product
           </p>
@@ -129,12 +130,12 @@ export default function Funnels() {
             ))}
           </div>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            <label style={{ fontSize: 11, color: '#64748b', margin: 0, textTransform: 'none', letterSpacing: 0, whiteSpace: 'nowrap' }}>From</label>
+            <label style={{ fontSize: 11, color: 'var(--muted)', margin: 0, textTransform: 'none', letterSpacing: 0, whiteSpace: 'nowrap' }}>From</label>
             <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
-              style={{ fontSize: 12, padding: '5px 8px', width: 140, borderRadius: 8, border: '1px solid #e2e8f0', background: '#ffffff', color: '#1e293b' }} />
-            <label style={{ fontSize: 11, color: '#64748b', margin: 0, textTransform: 'none', letterSpacing: 0, whiteSpace: 'nowrap' }}>To</label>
+              style={{ fontSize: 12, padding: '5px 8px', width: 140, borderRadius: 8, border: '1px solid rgba(148,163,184,0.16)', background: 'rgba(15,23,42,0.72)', color: '#e2e8f0' }} />
+            <label style={{ fontSize: 11, color: 'var(--muted)', margin: 0, textTransform: 'none', letterSpacing: 0, whiteSpace: 'nowrap' }}>To</label>
             <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
-              style={{ fontSize: 12, padding: '5px 8px', width: 140, borderRadius: 8, border: '1px solid #e2e8f0', background: '#ffffff', color: '#1e293b' }} />
+              style={{ fontSize: 12, padding: '5px 8px', width: 140, borderRadius: 8, border: '1px solid rgba(148,163,184,0.16)', background: 'rgba(15,23,42,0.72)', color: '#e2e8f0' }} />
             <button className="btn btn-sm btn-gray" onClick={() => {
               if (!dateFrom || !dateTo) return
               setUseCustom(true)
@@ -151,7 +152,7 @@ export default function Funnels() {
 
       {sortedKeys.length === 0 ? (
         <div className="card" style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <div style={{ fontSize: 14, color: '#64748b', marginBottom: 12 }}>No funnel data yet</div>
+          <div style={{ fontSize: 14, color: 'var(--muted)', marginBottom: 12 }}>No funnel data yet</div>
           <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 24 }}>Configure event mappings on the Semantic Mapping page, then events will automatically build your funnel.</div>
           <Link to={`/project/${selected}/mapping`} className="btn btn-primary">Go to Semantic Mapping</Link>
         </div>
@@ -170,7 +171,7 @@ export default function Funnels() {
               <div className="card" key={key} style={{ padding: 28 }}>
                 <div className="flex-between" style={{ marginBottom: 24 }}>
                   <div>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: '#1e293b', letterSpacing: '-0.3px' }}>{funnelName}</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: '#f8fbff', letterSpacing: '-0.3px' }}>{funnelName}</div>
                     <div className="text-muted text-xs" style={{ marginTop: 2 }}>{date}</div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
@@ -205,7 +206,7 @@ export default function Funnels() {
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                                <span style={{ fontSize: 14, fontWeight: 600, color: '#1e293b' }}>
+                                <span style={{ fontSize: 14, fontWeight: 600, color: '#f8fbff' }}>
                                   {FUNNEL_STEP_LABELS[s.step_name] || s.step_name}
                                 </span>
                                 {FUNNEL_STEP_LABELS[s.step_name] ? (
@@ -238,9 +239,9 @@ export default function Funnels() {
                               </div>
                               <div style={{ textAlign: 'right', flexShrink: 0, minWidth: 90 }}>
                                 <div style={{ fontSize: 14, fontWeight: 700, color: '#EAEAFA', lineHeight: 1.2 }}>
-                                  {s.count} <span style={{ fontSize: 11, fontWeight: 500, color: '#64748b' }}>users</span>
+                                  {s.count} <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--muted)' }}>users</span>
                                 </div>
-                                <div style={{ fontSize: 12, color: '#475569', fontWeight: 500 }}>
+                                <div style={{ fontSize: 12, color: '#cbd5e1', fontWeight: 500 }}>
                                   {s.conversion_rate}%
                                 </div>
                               </div>
@@ -293,10 +294,10 @@ export default function Funnels() {
                           <path d="M7 4.5V7.5M7 9V9.005" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
                         </svg>
                       </div>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>Insight</span>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: '#f8fbff' }}>Insight</span>
                     </div>
 
-                    <p style={{ fontSize: 13, color: '#334155', lineHeight: 1.6, marginBottom: 12 }}>
+                    <p style={{ fontSize: 13, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 12 }}>
                       <strong style={{ color: '#F87171' }}>{insight.biggestDrop.pct.toFixed(0)}%</strong> of users abandon the journey between{' '}
                       <strong style={{ color: '#22D3EE' }}>{insight.biggestDrop.from}</strong> and{' '}
                       <strong style={{ color: '#22D3EE' }}>{insight.biggestDrop.to}</strong>.
@@ -305,11 +306,11 @@ export default function Funnels() {
                       )}
                     </p>
 
-                    <div style={{ fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Recommendations</div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Recommendations</div>
                     <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
                       {insight.recommendations.slice(0, 3).map((r, ri) => (
                         <li key={ri} style={{
-                          fontSize: 12, color: '#475569', lineHeight: 1.5,
+                          fontSize: 12, color: '#cbd5e1', lineHeight: 1.5,
                           padding: '4px 0', paddingLeft: 16,
                           position: 'relative'
                         }}>
@@ -326,7 +327,7 @@ export default function Funnels() {
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                 }}>
                   <div className="text-xs text-muted">
-                    Started with <span style={{ color: '#1e293b', fontWeight: 600 }}>{firstCount} users</span>
+                    Started with <span style={{ color: '#f8fbff', fontWeight: 600 }}>{firstCount} users</span>
                     &nbsp;&middot;&nbsp;
                     <span style={{ color: '#22D3EE', fontWeight: 600 }}>{lastCount} converted</span>
                   </div>

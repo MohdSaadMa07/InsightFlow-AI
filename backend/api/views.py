@@ -29,7 +29,10 @@ def get_project(request):
 def ch_query(sql, params=None):
     if not ch.available:
         return None
-    return ch.get_client().query(sql, parameters=params or {})
+    try:
+        return ch.get_client().query(sql, parameters=params or {})
+    except Exception:
+        return None
 
 
 LANG_TO_COUNTRY = {
@@ -291,7 +294,7 @@ def overview(request):
         WHERE project_id = %(project_id)s
     ''', {'project_id': project.id, 'today': timezone.now().date().isoformat()})
 
-    if result is None:
+    if result is None or not result.result_rows:
         return Response(_orm_overview(project))
 
     row = result.result_rows[0]
@@ -418,6 +421,11 @@ def funnels(request):
     step_names = [s.strip() for s in steps_param.split(',')]
     conditions = ', '.join(f"event_name = '{s}'" for s in step_names)
 
+    # Prefer ORM (semantic) funnel when available
+    orm_data = _orm_funnels(project, start_date, end_date)
+    if orm_data:
+        return Response(orm_data)
+
     result = ch_query(f'''
         SELECT level, count() as cnt
         FROM (
@@ -435,10 +443,11 @@ def funnels(request):
     ''', {'project_id': project.id, 'start': start_date.isoformat(), 'end': end_date.isoformat()})
 
     if result is None:
-        return Response(_orm_funnels(project, start_date, end_date))
+        return Response([])
 
     level_map = {r[0]: r[1] for r in result.result_rows}
     first_step_count = level_map.get(1, 0)
+
     rows = []
     for i, name in enumerate(step_names):
         cnt = level_map.get(i + 1, 0)
@@ -472,9 +481,9 @@ def realtime(request):
         FROM insightflow.events
         WHERE project_id = %(project_id)s
           AND timestamp >= %(since)s
-    ''', {'project_id': project.id, 'since': five_min_ago.isoformat()})
+    ''', {'project_id': project.id, 'since': five_min_ago.strftime('%Y-%m-%d %H:%M:%S')})
 
-    if result is None:
+    if result is None or not result.result_rows:
         return Response(_orm_realtime(project))
 
     row = result.result_rows[0]
@@ -668,7 +677,7 @@ def sessions(request):
             total_duration += duration
         if event_count == 1:
             bounce_count += 1
-        if ts_max >= today_start:
+        if ts_max.replace(tzinfo=timezone.get_current_timezone()) >= now:
             sessions_today += 1
 
     avg_duration = round(total_duration / total_sessions, 2) if total_sessions > 0 else 0

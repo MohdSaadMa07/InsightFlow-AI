@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from events.clickhouse import ch
 from events.models import Event
-from analytics.models import DailyActiveUser, EventCount
+from analytics.models import DailyActiveUser, EventCount, DailyRevenue
 
 logger = logging.getLogger(__name__)
 
@@ -172,3 +172,46 @@ class AggregatorConsumer:
             project=project, event_name=event_name, date=date,
             defaults={'count': Event._base_manager.filter(project=project, event_name=event_name, timestamp__date=date).count()},
         )
+
+        # Revenue aggregation
+        props_raw = data.get('properties', '{}')
+        try:
+            props = json.loads(props_raw) if isinstance(props_raw, str) else props_raw
+        except (json.JSONDecodeError, TypeError):
+            props = {}
+        revenue_val = props.get('$revenue')
+        rev_type = props.get('$revenue_type')
+
+        if revenue_val is not None:
+            try:
+                revenue_val = float(revenue_val)
+            except (TypeError, ValueError):
+                revenue_val = None
+
+        if revenue_val is not None and rev_type in ('one_time', 'subscription', 'upgrade', 'refund'):
+            total_rev = -revenue_val if rev_type == 'refund' else revenue_val
+            mrr_val = revenue_val if rev_type == 'subscription' else 0
+
+            rev_row, _ = DailyRevenue.objects.get_or_create(project=project, date=date)
+            if not rev_row.pk:
+                rev_row.total_revenue = total_rev
+                rev_row.mrr = mrr_val
+                rev_row.transaction_count = 1
+                if rev_type == 'subscription':
+                    rev_row.subscription_count = 1
+                elif rev_type == 'refund':
+                    rev_row.refund_count = 1
+            else:
+                rev_row.total_revenue = float(rev_row.total_revenue) + total_rev
+                rev_row.mrr = float(rev_row.mrr) + mrr_val
+                rev_row.transaction_count += 1
+                if rev_type == 'subscription':
+                    rev_row.subscription_count += 1
+                elif rev_type == 'refund':
+                    rev_row.refund_count += 1
+
+            dau_today = Event._base_manager.filter(
+                project=project, timestamp__date=date
+            ).values('user_id').distinct().count()
+            rev_row.dau = dau_today
+            rev_row.save()

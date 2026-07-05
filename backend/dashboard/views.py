@@ -3,10 +3,28 @@ import logging
 import os
 from datetime import datetime
 
+import numpy as np
+
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
 from django.conf import settings
+from django.core.serializers.json import DjangoJSONEncoder
+
+
+class NumpyJSONEncoder(DjangoJSONEncoder):
+    def default(self, o):
+        if isinstance(o, (np.integer,)):
+            return int(o)
+        if isinstance(o, (np.floating,)):
+            return float(o)
+        if isinstance(o, (np.ndarray,)):
+            return o.tolist()
+        return super().default(o)
+
+
+def json_response(data, status=200):
+    return JsonResponse(data, encoder=NumpyJSONEncoder, status=status,         safe=False, json_dumps_params={'default': NumpyJSONEncoder().default})
 
 from ml.services.churn_risk import churn_risk
 
@@ -45,7 +63,7 @@ def _query_snapshots(project_id, limit=500):
         rows = client.query(f"""
             SELECT
                 user_id, churn_probability, risk_level, total_events,
-                shap_explanation, confidence, last_active_days,
+                shap_explanation, suggestions, confidence, last_active_days,
                 snapshot_date, computed_at
             FROM {ref}
             WHERE project_id = %(pid)s
@@ -57,16 +75,18 @@ def _query_snapshots(project_id, limit=500):
         results = []
         for r in rows.result_rows:
             shap = json.loads(r[4]) if r[4] else []
+            suggestions = json.loads(r[5]) if r[5] else []
             results.append({
                 'user_id': r[0],
                 'probability': r[1],
                 'risk_level': r[2],
                 'total_events': r[3],
                 'explanations': shap,
-                'confidence': r[5],
-                'last_active_days': r[6] or 0,
-                'snapshot_date': str(r[7]),
-                'computed_at': str(r[8]),
+                'suggestions': suggestions,
+                'confidence': r[6],
+                'last_active_days': r[7] or 0,
+                'snapshot_date': str(r[8]),
+                'computed_at': str(r[9]),
             })
         return results
     except Exception as e:
@@ -85,7 +105,7 @@ def _query_user_snapshot(project_id, user_id):
         rows = client.query(f"""
             SELECT
                 user_id, churn_probability, risk_level, total_events,
-                shap_explanation, confidence, confidence_score,
+                shap_explanation, suggestions, confidence, confidence_score,
                 cohort_size, last_active_days
             FROM {ref}
             WHERE project_id = %(pid)s AND user_id = %(uid)s
@@ -96,16 +116,18 @@ def _query_user_snapshot(project_id, user_id):
             return None
         r = rows.result_rows[0]
         shap = json.loads(r[4]) if r[4] else []
+        suggestions = json.loads(r[5]) if r[5] else []
         return {
             'user_id': r[0],
             'probability': float(r[1]),
             'risk_level': r[2],
             'total_events': int(r[3]),
             'explanations': shap,
-            'confidence': r[5],
-            'confidence_score': float(r[6]) if r[6] else 0,
-            'cohort_size': int(r[7]) if r[7] else 0,
-            'last_active_days': int(r[8]) if r[8] else 0,
+            'suggestions': suggestions,
+            'confidence': r[6],
+            'confidence_score': float(r[7]) if r[7] else 0,
+            'cohort_size': int(r[8]) if r[8] else 0,
+            'last_active_days': int(r[9]) if r[9] else 0,
             'unique_events': len(set(e.get('event_name', '') for e in shap)) if shap else None,
         }
     except Exception as e:
@@ -133,9 +155,9 @@ def churn_data(request):
     # Try ClickHouse snapshots first
     snapshots = _query_snapshots(project_id, limit=500)
     if snapshots:
-        from ml.services.churn_risk import churn_risk
-        overview = churn_risk.get_overview(snapshots) if churn_risk.load() else None
-        timeline = churn_risk.get_churn_timeline(snapshots) if churn_risk.load() else None
+        from ml.services.churn_risk import churn_risk as cr
+        overview = cr.get_overview(snapshots) if cr.load() else None
+        timeline = cr.get_churn_timeline(snapshots) if cr.load() else None
         return JsonResponse({
             "overview": overview,
             "predictions": snapshots,
@@ -150,6 +172,7 @@ def churn_data(request):
         return JsonResponse(cached)
 
     # Fallback: live compute
+    from ml.services.churn_risk import churn_risk
     if not churn_risk.load():
         return JsonResponse({"error": "Model not available"}, status=500)
 
@@ -239,3 +262,115 @@ def churn_explain(request, user_id):
                     "explanations": [],
                 })
     return JsonResponse({"error": "User not found"}, status=404)
+
+
+def revenue_dashboard(request):
+    return render(request, 'revenue_dashboard.html')
+
+
+@require_GET
+def revenue_data(request):
+    """Return historical daily revenue metrics."""
+    project_id = request.GET.get('project_id', 14)
+    days = int(request.GET.get('days', 180))
+    try:
+        project_id = int(project_id)
+    except (ValueError, TypeError):
+        return JsonResponse({"error": "Invalid project_id"}, status=400)
+
+    # ClickHouse first
+    from analytics.clickhouse_revenue import get_revenue_time_series
+    try:
+        data = get_revenue_time_series(project_id, days=days)
+        if data and any(r.get('total_revenue', 0) != 0 for r in data):
+            return JsonResponse({
+                "metrics": data[-days:],
+                "source": "clickhouse",
+                "generated_at": datetime.now().isoformat(),
+            })
+    except Exception:
+        logger.warning('ClickHouse revenue query failed')
+
+    # PostgreSQL fallback
+    from analytics.models import DailyRevenue
+    from datetime import timedelta
+    start = datetime.now().date() - timedelta(days=days)
+    qs = DailyRevenue.objects.filter(project_id=project_id, date__gte=start).order_by('date')
+    rows = [
+        {
+            'date': r.date.isoformat(),
+            'total_revenue': float(r.total_revenue),
+            'mrr': float(r.mrr),
+            'dau': r.dau,
+            'session_count': r.session_count,
+            'transaction_count': r.transaction_count,
+            'subscription_count': r.subscription_count,
+            'refund_count': r.refund_count,
+        }
+        for r in qs
+    ]
+    if rows:
+        return JsonResponse({
+            "metrics": rows,
+            "source": "postgresql",
+            "generated_at": datetime.now().isoformat(),
+        })
+    return JsonResponse({"error": "No revenue data"}, status=404)
+
+
+@require_GET
+def revenue_forecast_data(request):
+    """Return revenue forecasts with uncertainty bounds.
+
+    Serves from nightly cache when available; falls back to live compute.
+    """
+    project_id = request.GET.get('project_id', 14)
+    horizon = int(request.GET.get('horizon', 30))
+    try:
+        project_id = int(project_id)
+    except (ValueError, TypeError):
+        return JsonResponse({"error": "Invalid project_id"}, status=400)
+
+    from ml.services.revenue_forecast import revenue_forecast
+
+    # Try nightly cache first
+    cached = revenue_forecast.load_from_cache(project_id)
+    if cached:
+        return JsonResponse(cached)
+
+    # Fall back to live computation
+    result = revenue_forecast.predict(project_id, horizon=horizon)
+    if result:
+        return JsonResponse(result)
+    return JsonResponse({"error": "Forecast not available"}, status=404)
+
+
+@require_GET
+def anomaly_data(request):
+    """Return a production-grade behavioral anomaly summary for the selected project.
+
+    Response shape:
+    {
+        "summary": {...},
+        "recent_anomalies": [...],
+        "timeline": [...],
+        "incident_log": [...],
+    }
+    """
+    project_id = request.GET.get('project_id', 14)
+    days = int(request.GET.get('days', 14))
+    store_incidents = request.GET.get('store_incidents', 'true').lower() == 'true'
+    try:
+        project_id = int(project_id)
+    except (ValueError, TypeError):
+        return JsonResponse({"error": "Invalid project_id"}, status=400)
+
+    from ml.services.anomaly_detection import anomaly_detection
+
+    result = anomaly_detection.get_summary(
+        project_id, days=days, store_incidents=store_incidents
+    )
+    if result:
+        return json_response(result)
+    return JsonResponse({"error": "Anomaly data not available"}, status=404)
+
