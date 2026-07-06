@@ -1,28 +1,64 @@
-backend/.env
+# --- Python ---
 *.pyc
+*.pyo
+*.pyd
 __pycache__/
-node_modules/
+*.pyc
+*.egg-info/
+*.egg
 dist/
-*.sqlite3
+build/
+*.whl
+*.egg
 *.tgz
+*.sqlite3
 
-# ML training artifacts
-lightning_logs/
-*.pt
-*.ckpt
-backend/ml/models/artifacts/churn_cache.json
-backend/ml/models/artifacts/shap_cache.json
-backend/ml/models/artifacts/*.pkl
-
-# Jupyter notebooks
-*.ipynb
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Environment variables
+# --- Environment variables ---
 .env
 .env.*
 !.env.example
 !.env.prod.example
+backend/.env
+
+# --- ML training artifacts ---
+lightning_logs/
+*.pt
+*.ckpt
+backend/ml/models/artifacts/
+
+# --- Jupyter ---
+*.ipynb
+
+# --- Node / Frontend ---
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.env.production
+
+# --- IDE / Editor ---
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# --- OS files ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Logs ---
+*.log
+logs/
+
+# --- Docker ---
+docker-data/
+
+# --- SDK ---
+sdk/node_modules/
+sdk/dist/
