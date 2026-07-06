@@ -32,7 +32,7 @@ export default function RevenueForecast() {
   if (!selected) return <div className="empty-state" style={{ padding: '80px 20px' }}>Select a project from the sidebar</div>
   if (loading) return <div className="empty-state" style={{ padding: '80px 20px' }}>Loading revenue data...</div>
   if (error) return <div className="empty-state" style={{ padding: '80px 20px', color: '#dc2626' }}>Error: {error}</div>
-  if (!data || !data.hist) return <div className="empty-state" style={{ padding: '80px 20px' }}>No revenue data — run seed data with revenue properties</div>
+  if (!data || !data.hist) return <div className="empty-state" style={{ padding: '80px 20px' }}>Connect your project to start collecting events — revenue forecasts will appear once enough data is available</div>
 
   const metrics = data.hist.metrics || []
   const forecast = data.forecast

@@ -22,15 +22,21 @@ export default function ChurnDashboard() {
     if (!selected) return
     setLoading(true)
     fetch(`${BASE}/api/v1/dashboard/churn/data/?project_id=${selected}`)
-      .then(r => { if (!r.ok) throw new Error('Failed to load'); return r.json() })
-      .then(d => { setData(d); setLoading(false) })
+      .then(r => r.json().then(d => ({ ok: r.ok, data: d })))
+      .then(({ ok, data }) => {
+        if (!ok && (data?.error === 'No data available' || data?.error === 'Model not available')) {
+          setData(null); setLoading(false); return
+        }
+        if (!ok) { setError(data?.error || 'Failed to load'); setLoading(false); return }
+        setData(data); setLoading(false)
+      })
       .catch(e => { setError(e.message); setLoading(false) })
   }, [selected])
 
   if (!selected) return <div className="empty-state" style={{ padding: '80px 20px' }}>Select a project from the sidebar</div>
   if (loading) return <div className="empty-state" style={{ padding: '80px 20px' }}>Loading churn predictions...</div>
   if (error) return <div className="empty-state" style={{ padding: '80px 20px', color: '#dc2626' }}>Error: {error}</div>
-  if (!data) return null
+  if (!data) return <div className="empty-state" style={{ padding: '80px 20px' }}>Connect your project to start collecting events — churn predictions will appear once enough data is available</div>
 
   const { overview, predictions, timeline } = data
   const riskDist = [
