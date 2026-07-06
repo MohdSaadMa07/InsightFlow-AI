@@ -59,6 +59,7 @@ export default function Landing({ onAuth }) {
           <a href="#how-it-works">How It Works</a>
           <a href="#features">Features</a>
           <a href="#tech">Technology</a>
+          <a href="/developers" style={{ color: '#22d3ee' }}>{'</>'} Developers</a>
         </div>
         <div className="landing-nav-actions">
           <button onClick={() => setAuthMode('login')} className="btn btn-ghost btn-sm">Sign In</button>
