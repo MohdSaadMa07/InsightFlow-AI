@@ -1,4 +1,4 @@
-const BASE = import.meta.env.VITE_API_URL || ''
+const BASE = import.meta.env.VITE_API_URL || 'https://98.93.48.72.nip.io'
 
 function getHeaders() {
   const token = localStorage.getItem('token')
