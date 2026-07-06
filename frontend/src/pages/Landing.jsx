@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { api } from '../api'
 
 function useReveal() {
@@ -25,6 +26,7 @@ function Reveal({ children, delay = 0 }) {
 }
 
 export default function Landing({ onAuth }) {
+  const navigate = useNavigate()
   const [authMode, setAuthMode] = useState(null)
   const [form, setForm] = useState({ username: '', email: '', password: '', organization_name: '' })
   const [error, setError] = useState('')
@@ -59,7 +61,7 @@ export default function Landing({ onAuth }) {
           <a href="#how-it-works">How It Works</a>
           <a href="#features">Features</a>
           <a href="#tech">Technology</a>
-          <a href="/developers" style={{ color: '#22d3ee' }}>{'</>'} Developers</a>
+          <a href="/developers" style={{ color: '#22d3ee' }} onClick={e => { e.preventDefault(); navigate('/developers') }}>{'</>'} Developers</a>
         </div>
         <div className="landing-nav-actions">
           <button onClick={() => setAuthMode('login')} className="btn btn-ghost btn-sm">Sign In</button>
