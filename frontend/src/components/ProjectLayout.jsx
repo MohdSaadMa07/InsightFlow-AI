@@ -10,6 +10,7 @@ export default function ProjectLayout() {
   const [projects, setProjects] = useState([])
   const [currentProject, setCurrentProject] = useState(null)
   const [username, setUsername] = useState('')
+  const [hasEvents, setHasEvents] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -28,6 +29,9 @@ export default function ProjectLayout() {
       setProjects(data)
       const current = data.find(p => p.id == id)
       if (current) setCurrentProject(current)
+      api.get(`/api/v1/dashboard/overview/?project_id=${id}`).then(d => {
+        setHasEvents((d?.total_events || 0) > 0)
+      }).catch(() => {})
       setLoading(false)
     } catch {}
   }
@@ -42,8 +46,7 @@ export default function ProjectLayout() {
   const productLinks = [
     { name: 'Dashboard', path: 'dashboard' },
     { name: 'Revenue', path: 'revenue' },
-    { name: 'Churn Risk', path: 'churn' },
-
+    ...(hasEvents ? [{ name: 'Churn Risk', path: 'churn' }] : []),
     { name: 'Semantic Mapping', path: 'mapping' },
     { name: 'Funnels', path: 'funnels' },
   ]
