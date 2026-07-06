@@ -27,7 +27,7 @@ export default function App() {
         <Route path="/" element={token ? <Navigate to="/projects" /> : <Landing onAuth={handleAuth} />} />
         
         <Route path="/projects" element={token ? <ProjectHub /> : <Navigate to="/" />} />
-        <Route path="/developers" element={token ? <SDKTutorial /> : <Navigate to="/" />} />
+        <Route path="/developers" element={<SDKTutorial />} />
         
         <Route path="/project/:id" element={token ? <ProjectLayout /> : <Navigate to="/" />}>
           <Route path="dashboard" element={<Dashboard />} />
