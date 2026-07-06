@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
+import { BASE } from '../api'
 
 const niceNameMap = {
   transaction_count: 'Transaction Count',
@@ -34,8 +35,8 @@ export default function EncoderFeatures() {
     if (!selected) return
     setLoading(true)
     Promise.all([
-      fetch(`/api/v1/dashboard/revenue/forecast/?project_id=${selected}&horizon=30`).then(r => r.ok ? r.json() : null),
-      fetch(`/api/v1/dashboard/revenue/data/?project_id=${selected}&days=180`).then(r => r.ok ? r.json() : null),
+      fetch(`${BASE}/api/v1/dashboard/revenue/forecast/?project_id=${selected}&horizon=30`).then(r => r.ok ? r.json() : null),
+      fetch(`${BASE}/api/v1/dashboard/revenue/data/?project_id=${selected}&days=180`).then(r => r.ok ? r.json() : null),
     ])
       .then(([forecast, history]) => setData({ forecast, history }))
       .catch(err => setError(err.message))

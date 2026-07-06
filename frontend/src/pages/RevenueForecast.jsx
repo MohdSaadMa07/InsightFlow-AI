@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useOutletContext } from 'react-router-dom'
+import { BASE } from '../api'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Area, AreaChart, ComposedChart, Legend, ReferenceLine, Label } from 'recharts'
 
 const FORECAST_COLOR = '#6366f1'
@@ -18,8 +19,8 @@ export default function RevenueForecast() {
     if (!selected) return
     setLoading(true)
     Promise.all([
-      fetch(`/api/v1/dashboard/revenue/data/?project_id=${selected}&days=180`).then(r => r.ok ? r.json() : null),
-      fetch(`/api/v1/dashboard/revenue/forecast/?project_id=${selected}&horizon=30`).then(r => r.ok ? r.json() : null),
+      fetch(`${BASE}/api/v1/dashboard/revenue/data/?project_id=${selected}&days=180`).then(r => r.ok ? r.json() : null),
+      fetch(`${BASE}/api/v1/dashboard/revenue/forecast/?project_id=${selected}&horizon=30`).then(r => r.ok ? r.json() : null),
     ])
       .then(([hist, forecast]) => {
         setData({ hist, forecast })

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useOutletContext } from 'react-router-dom'
+import { BASE } from '../api'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts'
 
 const RISK_COLORS = { high: '#ef4444', medium: '#f59e0b', low: '#22c55e' }
@@ -20,7 +21,7 @@ export default function ChurnDashboard() {
   useEffect(() => {
     if (!selected) return
     setLoading(true)
-    fetch(`/api/v1/dashboard/churn/data/?project_id=${selected}`)
+    fetch(`${BASE}/api/v1/dashboard/churn/data/?project_id=${selected}`)
       .then(r => { if (!r.ok) throw new Error('Failed to load'); return r.json() })
       .then(d => { setData(d); setLoading(false) })
       .catch(e => { setError(e.message); setLoading(false) })
@@ -329,7 +330,7 @@ export default function ChurnDashboard() {
                           setModalUser(p.user_id)
                           setModalDetail(null)
                           setModalLoading(true)
-                          fetch(`/api/v1/dashboard/churn/explain/${encodeURIComponent(p.user_id)}/?project_id=${selected}`)
+                          fetch(`${BASE}/api/v1/dashboard/churn/explain/${encodeURIComponent(p.user_id)}/?project_id=${selected}`)
                             .then(r => r.ok ? r.json() : null)
                             .then(d => { if (d?.user_id) setModalDetail(d); setModalLoading(false) })
                             .catch(() => setModalLoading(false))
