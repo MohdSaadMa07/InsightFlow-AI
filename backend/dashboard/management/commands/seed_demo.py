@@ -166,12 +166,18 @@ class Command(BaseCommand):
 
         user_profiles = []
         for i in range(num_users):
-            behavior = 'active' if random.random() < 0.6 else ('churning' if random.random() < 0.5 else 'casual')
-            activity = {
-                'active': 1.0 + random.gauss(0, 0.3),
-                'casual': 0.3 + random.gauss(0, 0.15),
-                'churning': 0.1 + random.gauss(0, 0.08),
-            }[behavior]
+            if i < 10:
+                behavior = 'churning'
+                activity = 0.05 + random.random() * 0.1
+            elif i < 25:
+                behavior = 'casual'
+                activity = 0.2 + random.random() * 0.25
+            elif i < 40:
+                behavior = 'active'
+                activity = 0.6 + random.random() * 0.4
+            else:
+                behavior = 'power'
+                activity = 1.2 + random.random() * 0.6
             user_profiles.append({
                 'id': f'demo_user_{i:03d}',
                 'behavior': behavior,
@@ -199,7 +205,7 @@ class Command(BaseCommand):
         self.stdout.write('Computing daily revenue aggregates...')
         try:
             from analytics.clickhouse_revenue import aggregate_daily_revenue
-            aggregate_daily_revenue(project_id, days=days)
+            aggregate_daily_revenue(project_id)
             self.stdout.write('  Daily revenue aggregates computed\n')
         except Exception as e:
             self.stdout.write(f'  Revenue aggregation: {e}\n')
