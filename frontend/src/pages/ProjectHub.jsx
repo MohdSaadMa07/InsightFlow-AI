@@ -58,9 +58,12 @@ export default function ProjectHub() {
     <div className="layout">
       <nav className="topnav">
         <h1>InsightFlow</h1>
-        <div className="user-badge">
-          <span>{username}</span>
-          <button className="btn btn-gray btn-sm" onClick={logout}>Logout</button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <button className="btn btn-gray btn-sm" onClick={() => navigate('/developers')}>{'</>'} For Developers</button>
+          <div className="user-badge">
+            <span>{username}</span>
+            <button className="btn btn-gray btn-sm" onClick={logout}>Logout</button>
+          </div>
         </div>
       </nav>
 
