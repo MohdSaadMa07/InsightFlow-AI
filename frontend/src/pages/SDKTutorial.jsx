@@ -56,7 +56,7 @@ InsightFlow.init('YOUR_API_KEY', {
 
 // With options:
 InsightFlow.init('YOUR_API_KEY', {
-  apiHost: 'https://98.93.48.72.nip.io',  // custom backend
+  apiHost: 'https://34.207.37.93.nip.io',  // custom backend
   userId: 'user_12345'                     // known user ID
 });`,
 

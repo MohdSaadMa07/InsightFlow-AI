@@ -43,7 +43,6 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -65,17 +64,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# Anomaly severity thresholds (ratio = reconstruction_error / threshold)
-ANOMALY_SEVERITY_THRESHOLDS = {
-    'low': 1.0,      # ratio >= 1.0
-    'medium': 1.2,   # ratio >= 1.2
-    'high': 1.5,     # ratio >= 1.5
-    'critical': 2.0, # ratio >= 2.0
-}
-
-DATABASE_URL = os.getenv('DATABASE_URL')
-if DATABASE_URL:
-    DATABASES = {'default': dj_database_url.parse(DATABASE_URL, ssl_require=True)}
+if os.getenv('DATABASE_URL'):
+    DATABASES = {
+        'default': dj_database_url.parse(os.getenv('DATABASE_URL'), conn_max_age=600),
+    }
 else:
     DATABASES = {
         'default': {
@@ -85,9 +77,6 @@ else:
             'PASSWORD': os.getenv('DB_PASSWORD', ''),
             'HOST': os.getenv('DB_HOST', ''),
             'PORT': os.getenv('DB_PORT', ''),
-            'OPTIONS': {
-                'sslmode': os.getenv('DB_SSLMODE', 'disable'),
-            },
         },
     }
 
@@ -101,7 +90,6 @@ CLICKHOUSE = {
     'PASSWORD': os.getenv('CH_PASSWORD', ''),
     'DATABASE': os.getenv('CH_DATABASE', 'insightflow'),
     'TABLE': os.getenv('CH_TABLE', 'events'),
-    'SECURE': os.getenv('CH_SECURE', 'false').lower() == 'true',
 }
 
 # Kafka config
@@ -151,7 +139,7 @@ REST_FRAMEWORK = {
 CORS_ALLOW_ALL_ORIGINS = DEBUG
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') if os.getenv('CORS_ALLOWED_ORIGINS') else []
 
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if os.getenv('CSRF_TRUSTED_ORIGINS') else [
+CSRF_TRUSTED_ORIGINS = [
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:5175',
@@ -167,22 +155,3 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
-
-from celery.schedules import crontab
-CELERY_BEAT_SCHEDULE = {
-    'nightly-churn-pipeline': {
-        'task': 'ml.tasks.nightly_pipeline',
-        'schedule': crontab(hour=3, minute=0),  # 3 AM daily
-        'args': (14, 500, False),
-    },
-    'nightly-revenue-aggregation': {
-        'task': 'ml.tasks.nightly_revenue_aggregation',
-        'schedule': crontab(hour=3, minute=30),  # 3:30 AM
-        'args': (14,),
-    },
-    'nightly-revenue-forecast': {
-        'task': 'ml.tasks.nightly_revenue_forecast',
-        'schedule': crontab(hour=4, minute=0),  # 4 AM
-        'args': (14, 30),
-    },
-}

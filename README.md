@@ -339,7 +339,7 @@ Caddy automatically provisions Let's Encrypt SSL certificates for the `nip.io` d
 <script src="https://cdn.jsdelivr.net/npm/insightflow-sdk"></script>
 <script>
   InsightFlow.init('YOUR_API_KEY', {
-    host: 'https://98.93.48.72.nip.io'
+    host: 'https://34.207.37.93.nip.io'
   });
 </script>
 ```

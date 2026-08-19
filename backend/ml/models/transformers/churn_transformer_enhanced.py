@@ -1,25 +1,4 @@
-"""
-Enhanced Transformer Churn Classifier with Sinusoidal Time Encoding,
-Session Boundary Tokens, and MLM Pretraining.
 
-Architecture:
-  - Separate embedding tables for: event, hour, weekday, device, browser, page_type, country
-  - Sinusoidal time gap encoding with learnable frequencies (replaces bucket embedding)
-  - Session boundary tokens (<SESS_START>, <SESS_END>) in event vocab
-  - <MASK> token for MLM pretraining
-  - TransformerEncoder with CLS pooling
-  - Dual mode: MLM pretraining | classification fine-tuning
-  - Focal loss + prior bias initialization + label smoothing
-  - Probability correction (temperature + isotonic)
-  - Dynamic XGBoost benchmark
-
-Usage:
-    # Pretrain (MLM)
-    python -m ml.models.transformers.churn_transformer_enhanced --project_id 14 --mode mlm --epochs 30
-
-    # Fine-tune (classification)
-    python -m ml.models.transformers.churn_transformer_enhanced --project_id 14 --mode cls --epochs 20
-"""
 
 import argparse
 import math
