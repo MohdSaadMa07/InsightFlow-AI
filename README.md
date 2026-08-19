@@ -322,7 +322,7 @@ cp .env.prod.example .env.prod
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 
-Caddy automatically provisions Let's Encrypt SSL certificates for the `nip.io` domain.
+Caddy serves the Let's Encrypt certificate for `34.207.37.93.nip.io`.
 
 ### Frontend (Cloudflare Pages)
 
