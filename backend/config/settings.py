@@ -90,6 +90,7 @@ CLICKHOUSE = {
     'PASSWORD': os.getenv('CH_PASSWORD', ''),
     'DATABASE': os.getenv('CH_DATABASE', 'insightflow'),
     'TABLE': os.getenv('CH_TABLE', 'events'),
+    'SECURE': os.getenv('CH_SECURE', 'false').lower() == 'true',
 }
 
 # Kafka config
